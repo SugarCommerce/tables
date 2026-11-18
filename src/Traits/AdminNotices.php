@@ -144,13 +144,20 @@ trait AdminNotices {
                     '<div class="notice notice-error is-dismissible"><p>%s</p></div>',
                     esc_html__( 'That could not be done. Please try again.', 'sugarcommerce' )
             );
-        } elseif ( ( Request::has( 'error' ) && Request::text( 'error' ) !== 'action_failed' ) || ( Request::has( 'error' ) && empty( $row_action ) ) ) {
-            $error = Request::text( 'error' );
+        } elseif ( Request::has( 'error' ) ) {
+            // A code, never the words: anyone can send a link, so text read
+            // from the address would let them put an official-looking
+            // notice of their own wording on this screen. A code the table
+            // declared in `errors` gets its wording; any other says only
+            // that something failed.
+            $error = Request::key( 'error' );
 
-            if ( ! empty( $error ) && $error !== 'action_failed' ) {
+            if ( '' !== $error && 'action_failed' !== $error ) {
+                $known = $config['errors'][ $error ] ?? null;
+
                 printf(
                         '<div class="notice notice-error is-dismissible"><p>%s</p></div>',
-                        esc_html( $error )
+                        esc_html( is_string( $known ) && '' !== $known ? $known : __( 'That could not be done. Please try again.', 'sugarcommerce' ) )
                 );
             }
         }

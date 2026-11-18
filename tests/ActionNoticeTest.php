@@ -342,6 +342,98 @@ final class ActionNoticeTest extends TestCase {
 	}
 
 	/**
+	 * What the page prints for a request.
+	 *
+	 * @param array $config The registered configuration.
+	 *
+	 * @return string
+	 */
+	private static function notices( array $config ): string {
+		$method = new ReflectionMethod( Tables::class, 'render_admin_notices' );
+
+		ob_start();
+		$method->invoke( null, 'people', $config );
+
+		return (string) ob_get_clean();
+	}
+
+	/**
+	 * Text in `?error=` is never printed: anyone can send a link, and the
+	 * page would show their wording as an official notice.
+	 */
+	public function test_error_text_from_the_address_is_never_shown(): void {
+		$config = $this->register();
+
+		$_GET['error'] = 'Your licence has expired. Renew at evil.example to keep your store';
+
+		$html = self::notices( $config );
+
+		$this->assertStringNotContainsString( 'evil.example', $html );
+		$this->assertStringNotContainsString( 'licence', $html );
+		$this->assertStringContainsString( 'notice-error', $html, 'Still says that something failed.' );
+		$this->assertStringContainsString( 'That could not be done. Please try again.', $html );
+	}
+
+	/**
+	 * A code the table declared is shown in the table's own words, escaped.
+	 */
+	public function test_a_declared_error_code_gets_its_wording(): void {
+		$config = $this->register( [ 'errors' => [ 'no_stock' => 'Out of <b>stock</b>.' ] ] );
+
+		$_GET['error'] = 'no_stock';
+
+		$html = self::notices( $config );
+
+		$this->assertStringContainsString( 'Out of &lt;b&gt;stock&lt;/b&gt;.', $html );
+		$this->assertStringNotContainsString( 'That could not be done.', $html );
+	}
+
+	/**
+	 * The built-in code keeps its one notice.
+	 */
+	public function test_action_failed_is_said_once(): void {
+		$config = $this->register();
+
+		$_GET['error'] = 'action_failed';
+
+		$this->assertSame( 1, substr_count( self::notices( $config ), 'That could not be done. Please try again.' ) );
+	}
+
+	/**
+	 * A row action with wording of its own for failing says only that.
+	 */
+	public function test_a_row_action_that_words_its_failure_says_only_that(): void {
+		$config = $this->register(
+			[
+				'row_actions' => [
+					'archive' => [
+						'label'  => 'Archive',
+						'notice' => [
+							'success' => 'Archived.',
+							'error'   => 'Could not archive.',
+						],
+					],
+				],
+			]
+		);
+
+		$_GET['_row_action'] = 'archive';
+		$_GET['error']       = 'action_failed';
+
+		$html = self::notices( $config );
+
+		$this->assertStringContainsString( 'Could not archive.', $html );
+		$this->assertStringNotContainsString( 'That could not be done.', $html );
+	}
+
+	/**
+	 * No error, no error notice.
+	 */
+	public function test_no_error_says_nothing(): void {
+		$this->assertStringNotContainsString( 'notice-error', self::notices( $this->register() ) );
+	}
+
+	/**
 	 * A row action names its row, and the built-in Delete names what it
 	 * deleted -- or says it could not.
 	 */

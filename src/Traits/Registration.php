@@ -98,6 +98,10 @@ trait Registration {
             'messages'       => [],
             'item_name'      => null,
 
+            // Wording for the error codes a redirect may carry in `?error=`:
+            // code => message. Only these are shown in their own words.
+            'errors'         => [],
+
             // Filtering & views
             'views'          => [],
             'filters'        => [],

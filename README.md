@@ -204,6 +204,11 @@ view the action was taken from: status, search, filters, sort and page.
 A handler that could not change a row says so, and the notice says which and
 why: `SugarCommerce\Tables\Outcome::fail( $id, 'Order #98 is refunded' );`.
 
+A redirect of your own can say an error by code, `?error=no_stock`, worded in
+the table's `errors`: `'errors' => [ 'no_stock' => __( 'Out of stock.', 'my-plugin' ) ]`.
+Text in `?error=` is never printed, since anyone can send a link: a code the
+table did not declare shows only "That could not be done. Please try again."
+
 ## Rows from a BerlinDB table
 
 `Sources\BerlinDB::callbacks()` turns the table's request into
