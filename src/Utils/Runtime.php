@@ -47,6 +47,14 @@ final class Runtime {
 	private const LIBRARY = 'sugarcommerce-tables';
 
 	/**
+	 * How many segments this class's own namespace has --
+	 * SugarCommerce\Tables\Utils -- before any prefix. Counted rather than
+	 * written out: Strauss rewrites a namespace it finds in a string, and
+	 * would prefix the very thing being compared against.
+	 */
+	private const OWN_SEGMENTS = 3;
+
+	/**
 	 * The per-build prefix.
 	 *
 	 * "sugarcommerce-tables" for a plain Composer install -- development, or a single
@@ -79,13 +87,25 @@ final class Runtime {
 	 * @return string
 	 */
 	public static function prefix_for( string $under ): string {
-		$root = explode( '\\', $under )[0] ?? '';
+		// What Strauss put in front of this package's own namespace. A
+		// plugin of the SugarCommerce family prefixes with a namespace that
+		// starts "SugarCommerce\" too -- "SugarCommerce\Playground\Vendor\"
+		// -- so the first segment alone cannot tell a prefixed build from an
+		// unprefixed one: it named both "sugarcommerce-tables", and that plugin's
+		// handles, routes and keys were every unprefixed copy's.
+		$segments = array_slice( explode( '\\', trim( $under, '\\' ) ), 0, -self::OWN_SEGMENTS );
 
-		if ( '' === $root || 'SugarCommerce' === $root ) {
+		if ( [] === $segments || '' === $segments[0] ) {
 			return self::LIBRARY;
 		}
 
-		return self::slug( $root ) . '-' . self::LIBRARY;
+		// Only the first segment, as it always was, where that is enough:
+		// "SugarCart\Vendor" is "sugarcart". A family plugin's prefix needs
+		// all of its segments to be told apart from the library and from
+		// its siblings.
+		$name = 'SugarCommerce' === $segments[0] ? implode( '_', $segments ) : $segments[0];
+
+		return self::slug( $name ) . '-' . self::LIBRARY;
 	}
 
 	/**

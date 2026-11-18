@@ -85,5 +85,24 @@ final class RuntimeTest extends TestCase {
 			(string) file_get_contents( dirname( __DIR__ ) . '/assets/js/inline-edit.js' )
 		);
 	}
+
+	/**
+	 * A plugin of the family prefixes with a namespace that also starts
+	 * "SugarCommerce", and its build is still its own; a plugin outside the
+	 * family keeps the name its first segment always gave it.
+	 */
+	public function test_a_family_plugin_build_is_not_taken_for_the_library(): void {
+		$this->assertSame(
+			'sugarcommerce-playground-vendor-sugarcommerce-tables',
+			Runtime::prefix_for( 'SugarCommerce\\Playground\\Vendor\\SugarCommerce\\Tables\\Utils' )
+		);
+		$this->assertNotSame(
+			Runtime::prefix_for( 'SugarCommerce\\Playground\\Vendor\\SugarCommerce\\Tables\\Utils' ),
+			Runtime::prefix_for( 'SugarCommerce\\Members\\Vendor\\SugarCommerce\\Tables\\Utils' ),
+			'Two family plugins share a name.'
+		);
+		$this->assertSame( 'sugarcart-sugarcommerce-tables', Runtime::prefix_for( 'SugarCart\\Vendor\\SugarCommerce\\Tables\\Utils' ) );
+		$this->assertSame( 'sugarcommerce-tables', Runtime::prefix_for( '\\SugarCommerce\\Tables\\Utils\\' ) );
+	}
 }
 
