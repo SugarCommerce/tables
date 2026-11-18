@@ -1,0 +1,162 @@
+/**
+ * Toggle cells: a star, or a quiet line of words.
+ *
+ * Nothing here restyles the table. A star's column is sized as core sizes
+ * its own icon column, the comments bubble on Posts -- a width in ems, enough
+ * for the glyph and the sort arrow beside it -- by the column's own `width`.
+ */
+
+.sugarcommerce-toggle-cell {
+	display: inline-flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0 8px;
+}
+
+/* -------------------------------------------------------------------------
+ * The star: a button that looks like the star and nothing else, with core's
+ * own focus ring on it. Twenty-four pixels square at the least, so it is not
+ * a fiddly target on a phone.
+ * ---------------------------------------------------------------------- */
+
+.sugarcommerce-toggle-cell--star .sugarcommerce-toggle.button-link {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 24px;
+	min-height: 24px;
+	color: #646970;
+	text-decoration: none;
+}
+
+.sugarcommerce-toggle-cell--star .sugarcommerce-toggle.button-link:hover,
+.sugarcommerce-toggle-cell--star .sugarcommerce-toggle.button-link[aria-pressed="true"] {
+	color: #dba617;
+}
+
+.sugarcommerce-toggle-cell--star .sugarcommerce-toggle.button-link:focus {
+	color: #dba617;
+	box-shadow: 0 0 0 2px var(--wp-admin-theme-color, #2271b1);
+	border-radius: 2px;
+	outline: 2px solid transparent;
+}
+
+/* The star shown to somebody who may not press it. */
+.sugarcommerce-toggle-cell--star > .sugarcommerce-icon {
+	color: #646970;
+}
+
+.sugarcommerce-toggle-cell--star.is-on > .sugarcommerce-icon {
+	color: #dba617;
+}
+
+/* Every glyph here -- an SVG or a Dashicons span, as Icons::render() drew
+   it -- is a Dashicon's twenty pixels unless sized below. */
+.sugarcommerce-toggle-cell .sugarcommerce-icon,
+.sugarcommerce-toggle-heading .sugarcommerce-icon {
+	flex: none;
+	width: 20px;
+	height: 20px;
+	font-size: 20px;
+}
+
+/* A glyph for a heading (Toggle::heading()) sits on the line its sort
+   arrow does. */
+.sugarcommerce-toggle-heading .sugarcommerce-icon {
+	vertical-align: text-bottom;
+}
+
+/* -------------------------------------------------------------------------
+ * The line: a second line, in the size and grey of a list's other second
+ * lines, that looks like the text it is until it is pointed at or has the
+ * keyboard: then the words are underlined, and the keyboard has core's
+ * focus ring. "On" is in the green of a "Complete" badge.
+ * ---------------------------------------------------------------------- */
+
+.sugarcommerce-toggle-cell--line {
+	display: flex;
+	color: #6b6f75;
+	font-size: 12px;
+	line-height: 1.5;
+}
+
+.wp-list-table .sugarcommerce-toggle-cell--line .sugarcommerce-toggle,
+.sugarcommerce-toggle-cell--line .sugarcommerce-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	min-height: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 2px;
+	background: none;
+	box-shadow: none;
+	color: inherit;
+	font: inherit;
+	line-height: inherit;
+	text-align: start;
+	text-decoration: none;
+	cursor: pointer;
+	appearance: none;
+}
+
+.sugarcommerce-toggle-cell--line.is-on .sugarcommerce-toggle,
+.sugarcommerce-toggle-cell--line.is-on > .sugarcommerce-icon,
+.sugarcommerce-toggle-cell--line.is-on > .sugarcommerce-toggle__word {
+	color: #0a6b2d;
+}
+
+.sugarcommerce-toggle-cell--line .sugarcommerce-icon {
+	width: 14px;
+	height: 14px;
+	margin-inline-start: -1px;
+	font-size: 14px;
+	line-height: 1;
+}
+
+.sugarcommerce-toggle-cell--line .sugarcommerce-toggle:hover .sugarcommerce-toggle__word,
+.sugarcommerce-toggle-cell--line .sugarcommerce-toggle:focus-visible .sugarcommerce-toggle__word {
+	text-decoration: underline;
+}
+
+.sugarcommerce-toggle-cell--line .sugarcommerce-toggle:focus-visible {
+	outline: 2px solid #2271b1;
+	outline-offset: 1px;
+}
+
+/* -------------------------------------------------------------------------
+ * Both: while saving, and the words beside it -- the note before the first
+ * press that needs one, and why a change did not save.
+ * ---------------------------------------------------------------------- */
+
+.sugarcommerce-toggle[aria-busy="true"] {
+	cursor: progress;
+	opacity: 0.6;
+}
+
+.sugarcommerce-toggle__message {
+	font-size: 12px;
+	font-style: italic;
+	line-height: 1.4;
+}
+
+.sugarcommerce-toggle__message.is-error {
+	color: #a8201f;
+	font-style: normal;
+}
+
+.sugarcommerce-toggle-cell--star .sugarcommerce-toggle__message {
+	flex-basis: 100%;
+}
+
+@media (forced-colors: active) {
+
+	.sugarcommerce-toggle-cell--line .sugarcommerce-toggle {
+		color: LinkText;
+	}
+
+	.sugarcommerce-toggle-cell--star .sugarcommerce-toggle.button-link[aria-pressed="true"] {
+		color: Highlight;
+	}
+}

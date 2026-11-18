@@ -1,0 +1,106 @@
+/**
+ * The handle a row is moved by.
+ *
+ * Nothing here restyles the table, which is WordPress's own and stays that
+ * way. This is the one control the table does not have.
+ */
+
+.sugarcommerce-reorder {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.sugarcommerce-reorder__number {
+	min-width: 1.5em;
+	font-variant-numeric: tabular-nums;
+}
+
+/* A button, so it takes focus and the arrow keys, drawn as the grip core
+   uses wherever something can be dragged. */
+.sugarcommerce-reorder__handle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	border: 0;
+	border-radius: 2px;
+	background: none;
+	color: #8c8f94;
+	cursor: grab;
+	touch-action: none;
+}
+
+.sugarcommerce-reorder__handle:hover,
+.sugarcommerce-reorder__handle:focus {
+	color: #1d2327;
+}
+
+.sugarcommerce-reorder__handle:focus-visible {
+	outline: 2px solid #2271b1;
+	outline-offset: 1px;
+}
+
+.sugarcommerce-reorder__handle:active {
+	cursor: grabbing;
+}
+
+/* The two buttons are for a thumb. With a mouse or a keyboard the handle
+   does both jobs, and four controls a row would be a toolbar in a table. */
+.sugarcommerce-reorder__step.button {
+	display: none;
+	align-items: center;
+	justify-content: center;
+	min-width: 36px;
+	min-height: 32px;
+	padding: 0;
+}
+
+.sugarcommerce-reorder__step .sugarcommerce-icon {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+}
+
+/* Core's own breakpoint, below which a list table folds every column but
+   the first under each row. A row cannot be dragged along a column that is
+   folded away, so the handle gives way to the buttons. */
+@media screen and (max-width: 782px) {
+
+	.sugarcommerce-reorder__handle {
+		display: none;
+	}
+
+	.sugarcommerce-reorder__step.button {
+		display: inline-flex;
+	}
+}
+
+/* Where the row will land. */
+.sugarcommerce-reorder-placeholder td {
+	height: 48px;
+	background: #f0f6fc;
+	box-shadow: inset 0 0 0 1px #c5d9ed;
+}
+
+.wp-list-table tr.ui-sortable-helper {
+	display: table;
+	background: #fff;
+	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+	.wp-list-table tr.ui-sortable-helper {
+		box-shadow: 0 0 0 1px #c3c4c7;
+	}
+}
+
+@media (forced-colors: active) {
+
+	.sugarcommerce-reorder-placeholder td {
+		outline: 1px dashed CanvasText;
+	}
+}

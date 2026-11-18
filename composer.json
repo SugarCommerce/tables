@@ -1,0 +1,137 @@
+{
+  "name": "sugarcommerce/tables",
+  "description": "Admin list tables for a plugin's own data, from a description of the columns: the screen and its menu, search, sorting, paging, status views, filters, bulk and row actions, rows read from BerlinDB, and cells that switch, reorder and light up what is new.",
+  "homepage": "https://github.com/SugarCommerce/tables",
+  "type": "library",
+  "license": "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "David Sherlock",
+      "homepage": "https://arraypress.com/"
+    }
+  ],
+  "require": {
+    "php": ">=8.3",
+    "sugarcommerce/data": "dev-main",
+    "sugarcommerce/dates": "dev-main",
+    "sugarcommerce/fields": "dev-main",
+    "sugarcommerce/geo": "dev-main",
+    "sugarcommerce/money": "dev-main",
+    "sugarcommerce/plugin": "dev-main",
+    "sugarcommerce/status-badge": "dev-main",
+    "sugarcommerce/text": "dev-main"
+  },
+  "require-dev": {
+    "phpcompatibility/phpcompatibility-wp": "^2.1",
+    "phpunit/phpunit": "^12.0",
+    "squizlabs/php_codesniffer": "^3.13.5",
+    "wp-coding-standards/wpcs": "^3.4"
+  },
+  "suggest": {
+    "sugarcommerce/flyouts": "Opens a row in a panel from its title, its Edit action and the Add button.",
+    "sugarcommerce/jobs": "Draws a table's `sync` button."
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../data",
+      "options": {
+        "symlink": false
+      }
+    },
+    {
+      "type": "path",
+      "url": "../dates",
+      "options": {
+        "symlink": false
+      }
+    },
+    {
+      "type": "path",
+      "url": "../fields",
+      "options": {
+        "symlink": false
+      }
+    },
+    {
+      "type": "path",
+      "url": "../geo",
+      "options": {
+        "symlink": false
+      }
+    },
+    {
+      "type": "path",
+      "url": "../money",
+      "options": {
+        "symlink": false
+      }
+    },
+    {
+      "type": "path",
+      "url": "../plugin",
+      "options": {
+        "symlink": false
+      }
+    },
+    {
+      "type": "path",
+      "url": "../status-badge",
+      "options": {
+        "symlink": false
+      }
+    },
+    {
+      "type": "path",
+      "url": "../text",
+      "options": {
+        "symlink": false
+      }
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "SugarCommerce\\Tables\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "SugarCommerce\\Tables\\Tests\\": "tests/"
+    },
+    "exclude-from-classmap": [
+      "/tests/bootstrap.php",
+      "/tests/fixtures/",
+      "/tests/stubs.php",
+      "/tests/wp-admin/"
+    ]
+  },
+  "scripts": {
+    "test": "phpunit",
+    "lint": "phpcs",
+    "format": "phpcbf --standard=phpcs-format.xml.dist",
+    "format:check": "phpcs --standard=phpcs-format.xml.dist",
+    "docs:verify": "php vendor/sugarcommerce/fields/bin/verify-docs.php --calls=Tables::register README.md"
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "sort-packages": true,
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "support": {
+    "issues": "https://github.com/SugarCommerce/tables/issues",
+    "source": "https://github.com/SugarCommerce/tables"
+  },
+  "keywords": [
+    "wordpress",
+    "admin-tables",
+    "wp-list-table",
+    "berlindb",
+    "list-tables",
+    "wp-admin",
+    "declarative-api"
+  ]
+}

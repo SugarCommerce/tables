@@ -1,0 +1,100 @@
+/**
+ * The rows of a list that are lit: new ones, ones that want attention, and
+ * ones that are blocked.
+ *
+ * A lit row is a bar down its start edge: the mark core gives a comment
+ * waiting to be approved, in the same place and of the same width. Each
+ * state's colour, and whether the row is tinted behind it, are custom
+ * properties set on the state's own class by the table that has it
+ * (Seen\Highlights::css()); this draws whatever they say.
+ *
+ * The bar is a border on the row's first cell, as core's is, in a logical
+ * property so it is on the right in a right-to-left admin without a second
+ * rule. A real border and not a shadow or a gradient, which is what keeps it
+ * when Windows is in a high-contrast mode: that mode drops backgrounds and
+ * shadows and draws every border.
+ *
+ * Nothing moves: no pulse, no fade, so there is nothing for
+ * prefers-reduced-motion to switch off. Core's lists have no colour of their
+ * own for a row pointed at or ticked, so neither changes the bar.
+ */
+
+/* The bar. Four pixels, and the tick box moved along by as much so the
+   column of them stays straight down the list: both are what core does for
+   .unapproved in list-tables.css. On the first cell whatever it is, so a
+   list with no tick boxes has the bar too. */
+.wp-list-table tbody tr.sugarcommerce-row-lit > :first-child {
+	border-inline-start: 4px solid var(--sugarcommerce-row-bar, currentColor);
+}
+
+.wp-list-table tbody tr.sugarcommerce-row-lit > .check-column input {
+	margin-inline-start: 4px;
+}
+
+/* The tint, for a row that wants something done. On every cell so it is the
+   same over core's stripes; a colour of its own, mixed with white, so a
+   striped row and a plain one are tinted alike. */
+.wp-list-table tbody tr.sugarcommerce-row-tinted > * {
+	background-color: var(--sugarcommerce-row-tint);
+}
+
+/* The table's own stylesheet tints every row whose status is "pending"
+   cream, the way core tints a post awaiting review. On a list where a tint
+   means "this wants attention" that is a second, older meaning for the same
+   colour, on rows nobody has to do anything about. So on a list that lights
+   rows the tint is taken back off, to what core gives any row: its stripe,
+   or nothing. */
+.sugarcommerce-table-highlights .wp-list-table tbody tr.status-pending:not(.sugarcommerce-row-tinted) {
+	background: none;
+}
+
+.sugarcommerce-table-highlights .wp-list-table.striped > tbody > tr.status-pending:not(.sugarcommerce-row-tinted):nth-child(odd) {
+	background-color: #f6f7f7;
+}
+
+/* Folded to one column, a row is a flex box that wraps: the tick box and the
+   name on its first line, and every other cell on a line of its own once the
+   row is opened. The first cell is only as tall as the first line, so a bar
+   on it stopped where the name did. The row itself can carry a border here,
+   not being a table row any more, and that is the whole height of it however
+   many lines it has opened to. */
+@media screen and (max-width: 782px) {
+
+	.wp-list-table tbody tr.sugarcommerce-row-lit {
+		border-inline-start: 4px solid var(--sugarcommerce-row-bar, currentColor);
+	}
+
+	.wp-list-table tbody tr.sugarcommerce-row-lit > :first-child {
+		border-inline-start: 0;
+	}
+
+	/* The tick box's cell gives up the four pixels the bar took, so the box
+	   and the name beside it stay in line with the rows either side (the box
+	   itself is already four along, by the rule further up). */
+	.wp-list-table tbody tr.sugarcommerce-row-lit > .check-column {
+		flex-basis: calc(2.5em - 4px);
+		width: calc(2.5em - 4px);
+	}
+}
+
+/* A high-contrast mode keeps the border and chooses its colour, the same one
+   for every border on the page. So the states are told apart by more than
+   colour there: new is the system's own highlight, a row that wants
+   something is a double line in the colour of the text, and a blocked one is
+   dashed -- each state's `forced`. */
+@media (forced-colors: active) {
+
+	.wp-list-table tbody tr.sugarcommerce-row-lit > :first-child {
+		border-inline-start-color: var(--sugarcommerce-row-forced-color, CanvasText);
+		border-inline-start-style: var(--sugarcommerce-row-forced-style, solid);
+	}
+}
+
+/* And the row itself, where it carries the bar: folded to one column. */
+@media (forced-colors: active) and (max-width: 782px) {
+
+	.wp-list-table tbody tr.sugarcommerce-row-lit {
+		border-inline-start-color: var(--sugarcommerce-row-forced-color, CanvasText);
+		border-inline-start-style: var(--sugarcommerce-row-forced-style, solid);
+	}
+}

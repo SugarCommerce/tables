@@ -1,0 +1,738 @@
+/**
+ * Admin Tables Styles
+ *
+ * @package SugarCommerce\Tables
+ */
+
+/* ==========================================================================
+   Custom Properties
+   ========================================================================== */
+
+:root {
+    /* Text */
+    --at-text-primary: #1d2327;
+    --at-text-secondary: #646970;
+    --at-text-muted: #a7aaad;
+
+    /* Borders */
+    --at-border: #c3c4c7;
+
+    /* Backgrounds */
+    --at-bg-white: #fff;
+    --at-bg-subtle: #f0f0f1;
+    --at-bg-info: #f0f6fc;
+
+    /* Links / Accent */
+    /* The user's admin colour scheme, not the blue WordPress happens to ship
+       with. Core publishes these and recolours them per scheme, so a table
+       that hardcodes #2271b1 is the one thing on the screen that stays blue
+       when someone picks Midnight. The hex is a fallback for a context where
+       core's variables are not on the page. */
+    --at-accent: var(--wp-admin-theme-color, #2271b1);
+    --at-accent-hover: var(--wp-admin-theme-color-darker-10, #135e96);
+    --at-accent-alt: #0073aa;
+
+    /* Status */
+    --at-success: #46b450;
+    --at-danger: #b32d2e;
+    --at-danger-hover: #dc3545;
+
+    /* Code */
+    --at-code-font: Consolas, Monaco, monospace;
+    --at-code-size: 12px;
+
+    /* Radius */
+    --at-radius-sm: 3px;
+    --at-radius-md: 4px;
+
+    /* Thumbnail */
+    --at-thumb-max-width: 64px;
+    --at-thumb-radius: 4px;
+}
+
+/* ==========================================================================
+   Empty State
+   Shown when the table has zero items total (no search/filter active).
+   Follows WooCommerce / WordPress core empty post type screen patterns.
+   ========================================================================== */
+
+.list-table-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    max-width: 400px;
+    margin: 40px auto;
+}
+
+.list-table-empty-state__icon {
+    margin-bottom: 16px;
+}
+
+.list-table-empty-state__icon .sugarcommerce-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: var(--at-text-muted);
+    vertical-align: top;
+}
+
+.list-table-empty-state__heading {
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--at-text-primary);
+    margin: 0 0 8px;
+}
+
+.list-table-empty-state__description {
+    font-size: 13px;
+    color: var(--at-text-secondary);
+    margin: 0 auto 24px;
+    line-height: 1.5;
+    max-width: 34rem;
+}
+
+/* Under the button, because it is the second thing to do rather than an
+   alternative to the first. */
+.list-table-empty-state__link {
+    font-size: 13px;
+    margin: 16px 0 0;
+}
+
+.list-table-empty-state__action .button-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ==========================================================================
+   Misc Column Styles
+   ========================================================================== */
+
+.text-muted {
+    color: var(--at-text-muted);
+}
+
+.unlimited {
+    font-size: 18px;
+    color: var(--at-accent-alt);
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   Row Actions
+   ========================================================================== */
+
+.delete-link {
+    color: var(--at-danger);
+}
+
+.delete-link:hover {
+    color: var(--at-danger-hover);
+}
+
+/* ==========================================================================
+   Filter Actions
+   ========================================================================== */
+
+.tablenav .actions > .button + .button {
+    margin-left: 6px;
+}
+
+/* ==========================================================================
+   Inline edit checklist
+   ========================================================================== */
+
+/* A half-ticked box in Bulk Edit's checklist: some of the chosen rows have
+   it. Core's own rule, from list-tables.css, which names only
+   `post_category[]` -- so on any other checklist the admin's checkbox
+   style drew a half-ticked box as an empty one, and "some have this"
+   looked like "none do". */
+.inline-edit-row ul.cat-checklist input[type="checkbox"]:indeterminate::before {
+    content: '';
+    border-top: 2px solid grey;
+    width: 65%;
+    height: 2px;
+    position: absolute;
+    top: calc( 50% + 1px );
+    left: 50%;
+    transform: translate( -50%, -50% );
+}
+
+/* ==========================================================================
+   Avatar Styling (matches WordPress users table)
+   ========================================================================== */
+
+/* core's own values, from `.column-username img` in list-tables.css. The
+   primary column is included because that is where a `before` image goes,
+   and core only names the columns its own screens happen to use. */
+.wp-list-table .column-name img.avatar,
+.wp-list-table .column-customer img.avatar,
+.wp-list-table .column-product_name img.avatar,
+.wp-list-table .column-primary > img {
+    float: left;
+    margin-right: 10px;
+    margin-top: 1px;
+}
+
+.wp-list-table .avatar {
+    border-radius: 20%;
+}
+
+/* ==========================================================================
+   Column Value Formatting
+   ========================================================================== */
+
+/* Code/ID - monospace styling */
+.wp-list-table code.code {
+    background: var(--at-bg-subtle);
+    padding: 2px 6px;
+    border-radius: var(--at-radius-sm);
+    font-family: var(--at-code-font);
+    font-size: var(--at-code-size);
+    color: var(--at-text-primary);
+}
+
+/* Percentage */
+.wp-list-table .percentage {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Duration */
+.wp-list-table .duration {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+/* File size */
+.wp-list-table .file-size {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+/* Price */
+.wp-list-table .price {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+/* Thumbnail */
+.wp-list-table .column-thumbnail {
+    max-width: var(--at-thumb-max-width);
+    height: auto;
+    border-radius: var(--at-thumb-radius);
+    vertical-align: middle;
+}
+
+/* Boolean: a Dashicon's box, on the line a Dashicon sat on. */
+.wp-list-table .column-boolean-yes.sugarcommerce-icon,
+.wp-list-table .column-boolean-no.sugarcommerce-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    vertical-align: top;
+}
+
+.wp-list-table .column-boolean-yes {
+    color: var(--at-success);
+}
+
+.wp-list-table .column-boolean-no {
+    color: var(--at-text-muted);
+}
+
+/* Items */
+.wp-list-table .column-items-rest {
+    color: var(--at-text-secondary);
+}
+
+/* User */
+.wp-list-table .column-user {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.wp-list-table .column-user img.avatar {
+    border-radius: 50%;
+    vertical-align: middle;
+}
+
+/* Taxonomy */
+.wp-list-table .column-taxonomy {
+    line-height: 1.8;
+}
+
+.wp-list-table .column-term {
+    display: inline-block;
+    background: var(--at-bg-subtle);
+    padding: 2px 8px;
+    border-radius: var(--at-radius-sm);
+    font-size: 12px;
+    color: var(--at-text-primary);
+    white-space: nowrap;
+}
+
+a.column-term {
+    text-decoration: none;
+}
+
+a.column-term:hover {
+    background: var(--at-border);
+}
+
+/* Color */
+.wp-list-table .column-color span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.wp-list-table .column-color-swatch {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: var(--at-radius-sm);
+    border: 1px solid var(--at-border);
+    vertical-align: middle;
+}
+
+/* ==========================================================================
+   Row Classes
+   Status-based row styling following WordPress core patterns
+   (e.g., status-draft, status-pending in WP_Posts_List_Table).
+   Auto-applied via single_row() when item has get_status().
+   Custom classes via row_class callback config.
+   ========================================================================== */
+
+.wp-list-table tr.status-inactive,
+.wp-list-table tr.status-disabled,
+.wp-list-table tr.status-trash {
+    background: var(--at-bg-subtle);
+}
+
+.wp-list-table tr.status-inactive td,
+.wp-list-table tr.status-disabled td,
+.wp-list-table tr.status-trash td {
+    color: var(--at-text-secondary);
+}
+
+.wp-list-table tr.status-inactive td a,
+.wp-list-table tr.status-disabled td a,
+.wp-list-table tr.status-trash td a {
+    color: var(--at-text-secondary);
+}
+
+.wp-list-table tr.status-pending {
+    background: #fcf9e8;
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+
+/* ==========================================================================
+   Row Actions - Enforce Hover Behavior
+
+   WordPress may override this when columns are manageable, so we enforce it.
+   Undone on a narrow screen, at the end of this file, where there is no
+   hover to reveal them with.
+   ========================================================================== */
+
+.admin-table .wp-list-table .row-actions,
+.admin-table .wp-list-table .row-actions.visible {
+    visibility: hidden;
+}
+
+.admin-table .wp-list-table tr:hover .row-actions,
+.admin-table .wp-list-table tr:focus-within .row-actions {
+    visibility: visible;
+}
+
+/* ==========================================================================
+   Table Tweaks
+   ========================================================================== */
+
+/* ==========================================================================
+   Column Subtitle
+   Muted pill label shown beneath or beside the primary column title.
+   Used for nicknames, billing periods, or other secondary info.
+   ========================================================================== */
+
+.wp-list-table .column-subtitle {
+    display: inline-block;
+    margin-top: 4px;
+    margin-left: 10px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: 0.2px;
+    border: 1px solid;
+}
+
+/* One-time: neutral gray */
+.wp-list-table .column-subtitle--one-time {
+    background: #f0f0f1;
+    color: #646970;
+    border-color: #c3c4c782;
+}
+
+/* Recurring: soft blue */
+.wp-list-table .column-subtitle--recurring {
+    background: #e7f3ff;
+    color: #1d6fad;
+    border-color: #aedcff;
+}
+
+/* ==========================================================================
+   A person, and one thing a row names (Cells\Person, Cells\Item)
+   ========================================================================== */
+
+/* A link at the end of a person's name -- their other rows, say -- that is
+   one of the row's actions, and shown when they are: while the row is
+   pointed at or the link has the keyboard's focus. Until then it is clipped
+   away and not removed, so it can still be tabbed to. A screen that cannot
+   hover, and a list folded to one column, show it all the time, as core
+   shows the row actions there. */
+.sugarcommerce-reveal {
+    flex: none;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+@media (hover: hover) and (min-width: 783px) {
+
+    .wp-list-table tr:not(:hover) .sugarcommerce-reveal:not(:focus) {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+}
+
+/* One thing a row names, with its picture. The picture is small, and
+   starts where a person's does in the same row, so the two sit on one line
+   across it. The name is one line, cut short; "+ 2 others" follows it
+   where there is room and drops under it where there is not. */
+.sugarcommerce-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    min-width: 0;
+}
+
+.sugarcommerce-item-text {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.sugarcommerce-item-line {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 5px;
+    min-width: 0;
+}
+
+.sugarcommerce-item-title {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sugarcommerce-item-more {
+    max-width: 100%;
+    overflow: hidden;
+    color: #646970;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* A second line: a step quieter than the line above it -- 12px where the
+   list is 13, and a lighter grey than core's #646970, the lightest that
+   still reads at 4.5:1 on a striped or highlighted row (#6b6f75: 5.05 on
+   white, 4.71 on core's stripe). The address under a person's name is the
+   same. */
+.sugarcommerce-item-meta {
+    display: block;
+    overflow: hidden;
+    color: #6b6f75;
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* A name and "+ 2 more" on a second line stay on the one line: the name
+   is cut short and the count kept whole. */
+.sugarcommerce-item-meta .sugarcommerce-item-line {
+    flex-wrap: nowrap;
+}
+
+.sugarcommerce-item-meta .sugarcommerce-item-title {
+    flex: 0 1 auto;
+    min-width: 0;
+}
+
+.sugarcommerce-item-meta .sugarcommerce-item-more {
+    flex: none;
+    color: inherit;
+}
+
+/* The small picture: a square whatever shape the image is, with the
+   corner the grey tile is drawn with -- a fifth of its side. */
+.wp-list-table .sugarcommerce-thumb-small {
+    flex: none;
+    width: 24px;
+    height: 24px;
+    margin-top: 1px;
+    border-radius: 20%;
+    object-fit: cover;
+}
+
+/* A column that was not worked out while it was hidden, for the moment
+   between its box being ticked and the list loading again. */
+.sugarcommerce-column-deferred {
+    color: #a7aaad;
+}
+
+/* ==========================================================================
+   Narrow screens
+
+   Last in the file on purpose. A media query carries no extra specificity —
+   only later position — so the row-action override has to come after the
+   rule it undoes rather than before it.
+
+   Core already handles the list table itself here: it collapses the columns
+   behind a toggle and grows the controls to touch targets. What is left is
+   the handful of things this library adds on top.
+   ========================================================================== */
+
+@media screen and (max-width: 782px) {
+
+        /* Row actions are a hover affordance and a phone has no hover, so the
+       rule above would put every Edit and Delete link out of reach. */
+    .admin-table .wp-list-table .row-actions,
+    .admin-table .wp-list-table .row-actions.visible {
+        visibility: visible;
+    }
+
+    /* Sixty pixels of padding and forty of margin is most of a phone. */
+    .list-table-empty-state {
+        padding: 32px 16px;
+        margin: 20px auto;
+    }
+
+    .list-table-empty-state__icon .sugarcommerce-icon {
+        font-size: 36px;
+        width: 36px;
+        height: 36px;
+    }
+
+    /* Core stacks the filter controls, and a horizontal gutter between
+       buttons does nothing once they are on their own lines. */
+    .tablenav .actions > .button + .button {
+        margin-left: 0;
+        margin-top: 6px;
+    }
+
+}
+
+/*
+ * A column's "before" content — an avatar, a thumbnail, a status dot.
+ *
+ * Floated rather than laid out with flex: the title beside it is often a
+ * block-level <strong>, and the row actions underneath belong in the same
+ * text flow. Core does the same for the users screen, and matching it means
+ * a table built here sits at the same rhythm as one built by WordPress.
+ */
+
+/* Which row a quick edit is for: its name beside the column's heading, on
+   the line core gives a post's title box. */
+.inline-edit-row-title {
+	display: flex;
+	align-items: baseline;
+	gap: .5em;
+	margin: .2em 0 .6em;
+	line-height: 2.5;
+}
+
+.inline-edit-row-title .title {
+	width: 6em;
+	font-style: italic;
+}
+
+.inline-edit-row-title-text {
+	overflow-wrap: anywhere;
+}
+
+/* ==========================================================================
+   Column Footers
+   A figure for the whole view under a column. See Traits\Footer.
+   ========================================================================== */
+
+/* The second line under the figure, quieter than it. */
+.wp-list-table tfoot .sugarcommerce-table-footer small {
+	display: block;
+	color: var(--at-text-secondary);
+	font-size: 12px;
+}
+
+/* The same figure in the bottom navigation, shown only where its cell is
+   not: the rule for a column switched off is written per column, with the
+   table's other inline styles. Core's own line height, so it sits level
+   with "114 items" across from it. */
+.tablenav .sugarcommerce-table-totals {
+	line-height: 2.15384615;
+	margin: 0;
+}
+
+.tablenav .sugarcommerce-table-total {
+	display: none;
+	margin-right: 16px;
+}
+
+.tablenav .sugarcommerce-table-total-label {
+	color: var(--at-text-secondary);
+}
+
+/* Core shows only the primary column under 782px, footer cell included.
+   A line of its own under the bulk actions: beside them, the floated
+   select ran the figure round itself and left its last words underneath. */
+@media screen and (max-width: 782px) {
+	.tablenav .sugarcommerce-table-total {
+		display: inline;
+	}
+
+	.tablenav.bottom .sugarcommerce-table-totals {
+		float: none;
+		clear: both;
+		margin: 0;
+		padding: 8px 0 0;
+		line-height: 1.5;
+
+		/* Core's size for "114 items" at this width. */
+		font-size: 14px;
+	}
+}
+
+/* A search filter in the filter bar: sugarcommerce/fields' combobox, at the size
+   and on the line of core's selects beside it (`.tablenav .actions select`
+   floats, is 12.5rem at most and 6px apart). sugarcommerce/fields sizes it for a form,
+   at 25rem and a 40px height on a phone. */
+.tablenav .actions .field-kit__combobox {
+	float: left;
+	width: 14rem;
+	max-width: 100%;
+	margin-right: 6px;
+}
+
+.tablenav .actions .field-kit__combobox-input {
+	min-height: 30px;
+	margin: 0;
+	padding-top: 0;
+	padding-bottom: 0;
+	line-height: 2;
+}
+
+/* The select behind the combobox, kept for a screen reader. Core's
+   select padding outweighs .screen-reader-text's, so it was 33px and not
+   1px, standing at the input's right edge -- past the screen on a phone,
+   which then scrolled sideways. Inside the combobox, from its left. */
+.tablenav .actions .field-kit__combobox select.screen-reader-text {
+	left: 0;
+	min-width: 0;
+	padding: 0;
+}
+
+/* The list of matches over the rows under the bar, not behind them. */
+.tablenav .actions .field-kit__combobox-list {
+	z-index: 100;
+}
+
+/* What a list is narrowed to by a search filter, above it: "Product:
+   Synthwave Stems" and a cross that takes that one off. Core's grey for a
+   quiet box and the admin colour for the cross when it is pointed at or
+   has the keyboard. */
+/* A line of its own under the status links, which core floats: beside
+   them, on a phone, the chip was squeezed to a sliver past the edge. */
+.sugarcommerce-table-chips {
+	display: flex;
+	clear: both;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin: 8px 0 0;
+	padding-top: 4px;
+}
+
+.sugarcommerce-table-chip {
+	display: inline-flex;
+	align-items: center;
+	max-width: 100%;
+	border: 1px solid var(--at-border);
+	border-radius: 999px;
+	background: var(--at-bg-white);
+	color: var(--at-text-primary);
+	font-size: 13px;
+	line-height: 24px;
+}
+
+.sugarcommerce-table-chip-name {
+	overflow: hidden;
+	padding: 0 4px 0 10px;
+	font-weight: 600;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.sugarcommerce-table-chip-remove {
+	flex: none;
+	width: 24px;
+	height: 24px;
+	margin-right: 1px;
+	border-radius: 50%;
+	color: var(--at-text-secondary);
+	font-size: 16px;
+	line-height: 22px;
+	text-align: center;
+	text-decoration: none;
+}
+
+.sugarcommerce-table-chip-remove:hover,
+.sugarcommerce-table-chip-remove:focus {
+	background: var(--at-bg-subtle);
+	color: var(--at-accent);
+}
+
+/* Core hides the filter bar above a list under 782px. One with a search
+   filter is kept, a control to a line, 40px tall as core's are there. */
+@media screen and (max-width: 782px) {
+	.tablenav.top .actions.sugarcommerce-table-filters {
+		display: block;
+		float: none;
+		width: 100%;
+		margin: 0 0 8px;
+	}
+
+	/* Not the select a search filter keeps behind its combobox, which is
+	   a screen reader's: made a line wide, it stood 368px out past the
+	   edge of a phone and the page scrolled sideways. */
+	.tablenav .actions.sugarcommerce-table-filters select:not(.screen-reader-text) {
+		float: none;
+		width: 100%;
+		max-width: none;
+		margin: 0 0 8px;
+	}
+
+	.tablenav .actions .field-kit__combobox {
+		float: none;
+		width: 100%;
+		margin: 0 0 8px;
+	}
+
+	.tablenav .actions .field-kit__combobox-input {
+		min-height: 40px;
+	}
+}
