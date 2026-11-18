@@ -158,6 +158,48 @@ final class ReorderTest extends TestCase {
 	}
 
 	/**
+	 * A table whose own default sort is another column is out of order
+	 * until somebody sorts by the reorder's: newest first is not the
+	 * order anybody chose.
+	 */
+	public function test_a_default_sort_by_another_column_is_out_of_order(): void {
+		$this->register();
+
+		$config            = Tables::get_table( 'demo' );
+		$config['orderby'] = 'date_created';
+		$config['order']   = 'desc';
+
+		$this->assertFalse( Reorder::in_order( $config, Reorder::config( $config ) ?? [] ) );
+
+		$_GET = [
+			'orderby' => 'sort_order',
+			'order'   => 'asc',
+		];
+
+		$this->assertTrue( Reorder::in_order( $config, Reorder::config( $config ) ?? [] ) );
+	}
+
+	/**
+	 * With no default sort, or its own going up, the list is in order as
+	 * it opens.
+	 */
+	public function test_a_default_sort_by_its_own_column_is_in_order(): void {
+		$this->register();
+
+		$this->assertStringContainsString( 'sugarcommerce-reorder__handle', $this->cells( 1 )[0] );
+
+		$config            = Tables::get_table( 'demo' );
+		$config['orderby'] = '';
+
+		$this->assertTrue( Reorder::in_order( $config, Reorder::config( $config ) ?? [] ) );
+
+		$config['orderby'] = 'sort_order';
+		$config['order']   = 'desc';
+
+		$this->assertFalse( Reorder::in_order( $config, Reorder::config( $config ) ?? [] ) );
+	}
+
+	/**
 	 * Sorted by its own column going up is the order itself.
 	 */
 	public function test_sorted_by_its_own_column_is_in_order(): void {

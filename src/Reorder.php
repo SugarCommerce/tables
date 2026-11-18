@@ -184,7 +184,8 @@ final class Reorder {
 	 * Whether the list on screen is in the order that can be changed.
 	 *
 	 * Not sorted by anything else -- by nothing, or by the reorder's own
-	 * column going up -- and not searched. Nor narrowed by a status or a
+	 * column going up, whether the address says so or the table's own
+	 * default does -- and not searched. Nor narrowed by a status or a
 	 * filter, unless the reorder says `filtered`: the ids posted are only
 	 * the rows in view, and an order among some of them is not an order.
 	 *
@@ -197,6 +198,16 @@ final class Reorder {
 		// Reading how a list is sorted, not acting on anything.
 		$orderby = Request::key( 'orderby' );
 		$order   = strtolower( Request::key( 'order', 'asc' ) );
+
+		// An address that names no sort shows the list in its own default
+		// one, which is "nothing else" only when the table has none or it
+		// is the reorder's. A list of orders newest first is not in the
+		// order somebody chose, and a row dragged there would be saved
+		// into a place nobody can see.
+		if ( '' === $orderby ) {
+			$orderby = (string) ( $config['orderby'] ?? '' );
+			$order   = strtolower( (string) ( $config['order'] ?? 'asc' ) );
+		}
 
 		if ( '' !== trim( Request::text( 's' ) ) ) {
 			return false;
