@@ -384,6 +384,23 @@ if ( ! function_exists( 'get_user_option' ) ) {
 	}
 }
 
+/*
+ * Core's reading of the hidden columns (wp-admin/includes/screen.php): the
+ * saved choice, or `default_hidden_columns`, then `hidden_columns`.
+ */
+if ( ! function_exists( 'get_hidden_columns' ) ) {
+	function get_hidden_columns( $screen ) {
+		$hidden       = get_user_option( 'manage' . $screen->id . 'columnshidden' );
+		$use_defaults = ! is_array( $hidden );
+
+		if ( $use_defaults ) {
+			$hidden = apply_filters( 'default_hidden_columns', array(), $screen );
+		}
+
+		return apply_filters( 'hidden_columns', $hidden, $screen, $use_defaults );
+	}
+}
+
 if ( ! function_exists( '_x' ) ) {
 	function _x( $text, $context, $domain = 'default' ) {
 		return $text;
@@ -838,5 +855,104 @@ if ( ! function_exists( 'register_rest_route' ) ) {
 		$GLOBALS['rt_routes'][ $route_namespace . $route ] = $args;
 
 		return true;
+	}
+}
+
+/*
+ * Core's admin notice markup (wp-admin/includes/misc.php, 6.4+), as core
+ * builds it: the message is not escaped, the id and classes are not either,
+ * and wp_admin_notice() passes the result through wp_kses_post(), which a
+ * test cannot run and so is left out.
+ */
+if ( ! function_exists( 'wp_get_admin_notice' ) ) {
+	function wp_get_admin_notice( $message, $args = array() ) {
+		$args = array_merge(
+			array(
+				'type'               => '',
+				'dismissible'        => false,
+				'id'                 => '',
+				'additional_classes' => array(),
+				'attributes'         => array(),
+				'paragraph_wrap'     => true,
+			),
+			(array) $args
+		);
+
+		$id         = '';
+		$classes    = 'notice';
+		$attributes = '';
+
+		if ( is_string( $args['id'] ) && '' !== trim( $args['id'] ) ) {
+			$id = 'id="' . trim( $args['id'] ) . '" ';
+		}
+
+		if ( is_string( $args['type'] ) && '' !== trim( $args['type'] ) ) {
+			$classes .= ' notice-' . trim( $args['type'] );
+		}
+
+		if ( true === $args['dismissible'] ) {
+			$classes .= ' is-dismissible';
+		}
+
+		if ( is_array( $args['additional_classes'] ) && ! empty( $args['additional_classes'] ) ) {
+			$classes .= ' ' . implode( ' ', $args['additional_classes'] );
+		}
+
+		if ( is_array( $args['attributes'] ) ) {
+			foreach ( $args['attributes'] as $attr => $val ) {
+				if ( is_bool( $val ) ) {
+					$attributes .= $val ? ' ' . $attr : '';
+				} elseif ( is_int( $attr ) ) {
+					$attributes .= ' ' . esc_attr( trim( $val ) );
+				} elseif ( $val ) {
+					$attributes .= ' ' . $attr . '="' . esc_attr( trim( $val ) ) . '"';
+				}
+			}
+		}
+
+		if ( false !== $args['paragraph_wrap'] ) {
+			$message = "<p>$message</p>";
+		}
+
+		return sprintf( '<div %1$sclass="%2$s"%3$s>%4$s</div>', $id, $classes, $attributes, $message );
+	}
+}
+
+if ( ! function_exists( 'wp_admin_notice' ) ) {
+	function wp_admin_notice( $message, $args = array() ) {
+		echo wp_get_admin_notice( $message, $args );
+	}
+}
+
+/*
+ * What wp_admin_notice() passes the markup through. The notices here carry
+ * only escaped text, which it leaves as it is.
+ */
+if ( ! function_exists( 'wp_kses_post' ) ) {
+	function wp_kses_post( $data ) {
+		return (string) $data;
+	}
+}
+
+/*
+ * Core's remove_submenu_page() (wp-admin/includes/plugin.php).
+ */
+if ( ! function_exists( 'remove_submenu_page' ) ) {
+	function remove_submenu_page( $menu_slug, $submenu_slug ) {
+		global $submenu;
+
+		if ( ! isset( $submenu[ $menu_slug ] ) ) {
+			return false;
+		}
+
+		foreach ( $submenu[ $menu_slug ] as $i => $item ) {
+			if ( $submenu_slug === $item[2] ) {
+				unset( $submenu[ $menu_slug ][ $i ] );
+
+				return $item;
+			}
+		}
+
+		return false;
 	}
 }

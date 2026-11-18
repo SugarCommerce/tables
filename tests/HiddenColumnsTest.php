@@ -13,6 +13,7 @@ use SugarCommerce\Tables\HiddenColumns;
 use SugarCommerce\Tables\Tables;
 use SugarCommerce\Tables\Table;
 use PHPUnit\Framework\TestCase;
+use ReflectionMethod;
 
 /**
  * A deferred column that is hidden is not worked out.
@@ -82,6 +83,10 @@ final class HiddenColumnsTest extends TestCase {
 			]
 		);
 
+		// What loading the table's page does: tell core which columns
+		// start hidden on its screen.
+		( new ReflectionMethod( Tables::class, 'setup_column_options' ) )->invoke( null, $GLOBALS['rt_screen'], Tables::get_table( 'shop_customers' ), 'shop_customers' );
+
 		return new Table( 'shop_customers', Tables::get_table( 'shop_customers' ) );
 	}
 
@@ -143,5 +148,30 @@ final class HiddenColumnsTest extends TestCase {
 	public function test_any_finds_a_deferred_column(): void {
 		$this->assertFalse( HiddenColumns::any( [ 'columns' => [ 'name' => 'Name', 'x' => [ 'label' => 'X' ] ] ] ) );
 		$this->assertTrue( HiddenColumns::any( [ 'columns' => [ 'x' => [ 'label' => 'X', 'deferred' => 'manual' ] ] ] ) );
+	}
+
+	/**
+	 * The reading is core's, so core's `hidden_columns` filter is heard,
+	 * by the table and by a deferred column alike.
+	 */
+	public function test_cores_filter_is_heard(): void {
+		$table = $this->table();
+
+		add_filter( 'hidden_columns', static fn( array $hidden ): array => array_merge( $hidden, [ 'name' ] ) );
+
+		$this->assertSame( [ 'last_order', 'name' ], $table->get_hidden_columns() );
+		$this->assertTrue( HiddenColumns::is_hidden( 'shop_customers', 'name' ) );
+	}
+
+	/**
+	 * With no screen -- an ajax request drawing one row -- what the table
+	 * declares is the answer.
+	 */
+	public function test_with_no_screen_the_declared_columns_are_hidden(): void {
+		$table = $this->table();
+
+		$GLOBALS['rt_screen'] = null;
+
+		$this->assertSame( [ 'last_order' ], $table->get_hidden_columns() );
 	}
 }

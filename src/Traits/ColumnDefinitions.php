@@ -12,6 +12,8 @@ declare( strict_types=1 );
 
 namespace SugarCommerce\Tables\Traits;
 
+use SugarCommerce\Tables\HiddenColumns;
+
 /**
  * Which columns exist, which are hidden, and which can be sorted by.
  *
@@ -66,36 +68,16 @@ trait ColumnDefinitions {
     /**
      * Get hidden columns
      *
-     * Returns array of column keys that should be hidden by default.
-     * Users can show/hide columns via Screen Options.
+     * What this person saved in Screen Options, or what the table declares
+     * hidden when they have saved nothing; core's reading, see
+     * HiddenColumns::of().
      *
      * @return array Column keys to hide by default.
      * @since 1.0.0
      *
      */
     public function get_hidden_columns(): array {
-        // Check user's saved column preferences first
-        $screen = get_current_screen();
-        if ( $screen ) {
-            $hidden = get_user_option( 'manage' . $screen->id . 'columnshidden' );
-            if ( is_array( $hidden ) ) {
-                return $hidden;
-            }
-        }
-
-        // Fall back to config defaults
-        $hidden = $this->config['hidden_columns'] ?? [];
-
-        /**
-         * Filter the hidden columns
-         *
-         * @param array  $hidden Hidden column keys.
-         * @param array  $config Table configuration.
-         *
-         * @since 1.0.0
-         *
-         */
-        return apply_filters( "sugarcommerce_table_hidden_columns_{$this->id}", $hidden, $this->config );
+        return HiddenColumns::of( $this->id, $this->config );
     }
 
     /**

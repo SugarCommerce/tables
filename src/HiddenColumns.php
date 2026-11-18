@@ -61,18 +61,8 @@ final class HiddenColumns {
 	 * @since 1.0.0
 	 */
 	public static function is_hidden( string $table_id, string $column ): bool {
-		$config = (array) Tables::get_table( $table_id );
-		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-		$hidden = $screen && function_exists( 'get_user_option' )
-			? get_user_option( 'manage' . $screen->id . 'columnshidden' )
-			: false;
-
-		if ( ! is_array( $hidden ) ) {
-			/** This filter is documented in src/Traits/ColumnDefinitions.php */
-			$hidden = (array) apply_filters( "sugarcommerce_table_hidden_columns_{$table_id}", $config['hidden_columns'] ?? [], $config );
-		}
-
-		$is_hidden = in_array( $column, array_map( 'strval', $hidden ), true );
+		$hidden    = self::of( $table_id, (array) Tables::get_table( $table_id ) );
+		$is_hidden = in_array( $column, $hidden, true );
 
 		/**
 		 * Filter whether a column of a table is hidden, for working it out.
@@ -86,6 +76,40 @@ final class HiddenColumns {
 		 * @since 1.0.0
 		 */
 		return (bool) apply_filters( "sugarcommerce_table_column_hidden_{$table_id}", $is_hidden, $column );
+	}
+
+	/**
+	 * The columns of a table hidden for whoever is looking.
+	 *
+	 * Core's reading, get_hidden_columns(): what this person saved in Screen
+	 * Options, and when they have saved nothing, `default_hidden_columns` --
+	 * which the table answers on its own screen with its `hidden_columns`
+	 * (see ScreenSetup) -- then core's `hidden_columns` filter. With no
+	 * screen (an ajax request draws a row) there is no saved choice to read,
+	 * and the answer is what the table declares.
+	 *
+	 * @param string $table_id The table, as it was registered.
+	 * @param array  $config   Its configuration.
+	 *
+	 * @return string[]
+	 * @since 1.0.0
+	 */
+	public static function of( string $table_id, array $config ): array {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+
+		if ( $screen && function_exists( 'get_hidden_columns' ) ) {
+			return array_map( 'strval', (array) get_hidden_columns( $screen ) );
+		}
+
+		/**
+		 * Filter the columns a table hides until someone chooses their own.
+		 *
+		 * @param array  $hidden Hidden column keys.
+		 * @param array  $config Table configuration.
+		 *
+		 * @since 1.0.0
+		 */
+		return array_map( 'strval', (array) apply_filters( "sugarcommerce_table_hidden_columns_{$table_id}", $config['hidden_columns'] ?? [], $config ) );
 	}
 
 	/**

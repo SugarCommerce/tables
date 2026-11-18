@@ -397,7 +397,18 @@ final class InlineEdit {
 								<span class="spinner"></span>
 							<?php endif; ?>
 
-							<div class="notice notice-error notice-alt inline hidden"><p class="error"></p></div>
+							<?php
+							// Core's quick edit writes its error box this way;
+							// inline-edit.js fills the p.error.
+							wp_admin_notice(
+								'<p class="error"></p>',
+								[
+									'type'               => 'error',
+									'additional_classes' => [ 'notice-alt', 'inline', 'hidden' ],
+									'paragraph_wrap'     => false,
+								]
+							);
+							?>
 						</div>
 					</div>
 				</td>

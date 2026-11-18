@@ -201,7 +201,7 @@ trait ScreenSetup {
                 return $hidden;
             }
 
-            /** This filter is documented in src/Traits/ColumnDefinitions.php */
+            /** This filter is documented in src/HiddenColumns.php */
             $ours = apply_filters( "sugarcommerce_table_hidden_columns_{$id}", $config['hidden_columns'] ?? [], $config );
 
             return array_values( array_unique( array_merge( (array) $hidden, (array) $ours ) ) );
@@ -284,8 +284,9 @@ trait ScreenSetup {
      * @param string $id Table identifier.
      *
      * @return string
+     * @since 1.0.0
      */
-    private static function per_page_option( string $id ): string {
+    public static function per_page_option( string $id ): string {
         return $id . '_per_page';
     }
 }

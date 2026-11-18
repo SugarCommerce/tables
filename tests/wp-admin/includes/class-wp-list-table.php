@@ -110,7 +110,8 @@ class WP_List_Table {
 	}
 
 	/**
-	 * How many rows a page holds.
+	 * How many rows a page holds, as core reads it: the user option, else the
+	 * default, then the "{$option}" filter.
 	 *
 	 * @param string $option   The user option name.
 	 * @param int    $fallback The default.
@@ -118,7 +119,13 @@ class WP_List_Table {
 	 * @return int
 	 */
 	protected function get_items_per_page( $option, $fallback = 20 ) {
-		return (int) $fallback;
+		$per_page = (int) get_user_option( $option );
+
+		if ( empty( $per_page ) || $per_page < 1 ) {
+			$per_page = $fallback;
+		}
+
+		return (int) apply_filters( "{$option}", $per_page );
 	}
 
 	/**

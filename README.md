@@ -209,6 +209,10 @@ the table's `errors`: `'errors' => [ 'no_stock' => __( 'Out of stock.', 'my-plug
 Text in `?error=` is never printed, since anyone can send a link: a code the
 table did not declare shows only "That could not be done. Please try again."
 
+Every notice is core's own `wp_admin_notice()` -- the markup it always had --
+so core's `wp_admin_notice_args` and `wp_admin_notice_markup` filters reach
+it.
+
 ## Rows from a BerlinDB table
 
 `Sources\BerlinDB::callbacks()` turns the table's request into
@@ -515,6 +519,11 @@ ListDate::cell( $row->date_renews, ListDate::mode( 'my_plugin_list_dates' ), [ '
 `sugarcommerce_table_date_mode_{meta_key}` can answer `relative` or `exact` for
 everybody.
 
+The relative reading is sugarcommerce/dates' `Site::relative()`, the one
+relative-time renderer in the family. The exact reading's default is a short
+date ("13 Oct 2026, 3:20 pm", translatable), not the site's `date_format` and
+`time_format`, which are a long date meant for a post; pass `format` for those.
+
 ## A column that costs something to show
 
 A column that asks another table -- what a customer last bought, where a
@@ -538,6 +547,13 @@ and `HiddenColumns::placeholder()` -- which is also how a `get_items` skips
 priming what a hidden column would have asked for.
 `sugarcommerce_table_column_hidden_{table_id}` can say a column is read off the
 page whether it is shown or not.
+
+Which columns are hidden is core's reading, `get_hidden_columns()`: what the
+person saved in Screen Options, else the table's `hidden_columns` (said to
+core through `default_hidden_columns`), then core's `hidden_columns` filter.
+How many rows a page holds is core's too, `WP_List_Table::get_items_per_page()`
+under the option `{table_id}_per_page` (`Tables::per_page_option( $id )`),
+with core's `{table_id}_per_page` filter.
 
 ## New since you last looked
 
@@ -847,6 +863,11 @@ config a list passes today is read the same way.
 | wp-register-flyouts `Registry`, wp-inline-sync `Registry` | sugarcommerce/flyouts `Registry`, sugarcommerce/jobs `Sync` |
 | wp-field-kit, wp-status-badge, wp-countries, wp-date-utils, wp-money, wp-format-utils, wp-composer-assets | sugarcommerce/fields, status-badge, geo, dates, money, text, plugin |
 | text domain `arraypress` | `sugarcommerce` |
+| `Table::get_items_per_page()` override (read the user meta by hand) | removed: core's `WP_List_Table::get_items_per_page( Tables::per_page_option( $id ), $default )`, which adds the `{table_id}_per_page` filter |
+| hidden columns read from `manage{screen}columnshidden` by hand | `HiddenColumns::of( $table_id, $config )`, core's `get_hidden_columns()` (adds the `hidden_columns` filter) |
+| notices printed by hand; `ActionNotice::render()` | `wp_admin_notice()` / `wp_get_admin_notice()`, the same markup |
+| `ParentMenu::fix_menus()` unset `[0]` | `remove_submenu_page( $slug, $slug )`: only the entry that links to the parent goes |
+| relative dates | sugarcommerce/dates `Site::relative()` (`ListDate::relative()` calls it) |
 
 What somebody chose is kept: the user meta keys (`{table_id}_seen`, the date
 preference) and the BerlinDB source's options are unchanged. Status badge

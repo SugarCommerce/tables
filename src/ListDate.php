@@ -226,6 +226,11 @@ final class ListDate {
 	 */
 	public static function exact( string $value, string $format = '' ): string {
 		if ( '' === $format ) {
+			// Not the site's date_format and time_format, deliberately: those
+			// are a long date ("October 13, 2026 3:20 pm") meant for a post,
+			// too wide for a list column, and swapping would change every
+			// list that already shows this. A table that wants the site's
+			// reading passes `format`. Translated, so a locale has its own.
 			/* translators: a short date and a time, as PHP's date() writes them: "13 Oct 2026, 3:20 pm". */
 			$format = _x( 'j M Y, g:i a', 'short date and time', 'sugarcommerce' );
 		}

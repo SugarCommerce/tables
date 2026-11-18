@@ -260,6 +260,7 @@ final class InlineEditTest extends TestCase {
 				'colspanchange',
 				'colspan="5"',
 				'name="bulk_edit"',
+				'<div class="notice notice-error notice-alt inline hidden"><p class="error"></p></div>',
 			] as $marker
 		) {
 			$this->assertStringContainsString( $marker, $html, $marker );

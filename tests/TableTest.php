@@ -164,6 +164,34 @@ final class TableTest extends TestCase {
 	}
 
 	/**
+	 * A page holds what this person chose in Screen Options, under the
+	 * table's own option, read by core, which also offers its filter.
+	 */
+	public function test_the_saved_per_page_is_read_by_core(): void {
+		$GLOBALS['rt_user_options'] = [ 'demo_per_page' => '25' ];
+
+		$seen   = null;
+		$config = [
+			'per_page'  => 10,
+			'callbacks' => [
+				'get_items' => function ( $args ) use ( &$seen ) {
+					$seen = $args;
+
+					return [];
+				},
+			],
+		];
+
+		$this->table( $config )->get_data();
+		$this->assertSame( 25, $seen['number'] ?? null );
+
+		add_filter( 'demo_per_page', static fn(): int => 5 );
+
+		$this->table( $config )->get_data();
+		$this->assertSame( 5, $seen['number'] ?? null );
+	}
+
+	/**
 	 * The second page is offset by a page.
 	 *
 	 * Off-by-one here shows the first row of page two at the bottom of page

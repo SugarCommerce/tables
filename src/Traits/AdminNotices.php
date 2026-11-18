@@ -46,7 +46,7 @@ trait AdminNotices {
         $kept = Request::filled( ActionNotice::ARG ) ? ActionNotice::take( Request::key( ActionNotice::ARG ) ) : null;
 
         if ( null !== $kept ) {
-            echo ActionNotice::render( $kept ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped where it is built.
+            echo wp_kses_post( ActionNotice::render( $kept ) );
         }
 
         $singular = $config['labels']['singular'] ?? 'item';
@@ -82,11 +82,7 @@ trait AdminNotices {
                     $type    = 'error';
                 }
 
-                printf(
-                        '<div class="notice notice-%s is-dismissible"><p>%s</p></div>',
-                        esc_attr( $type ),
-                        esc_html( $message )
-                );
+                self::notice( $message, $type );
             }
 
             // Updated notice (generic, when no action-specific notice exists)
@@ -101,10 +97,7 @@ trait AdminNotices {
                             1 === $count ? $singular : $plural
                     );
 
-                    printf(
-                            '<div class="notice notice-success is-dismissible"><p>%s</p></div>',
-                            esc_html( $message )
-                    );
+                    self::notice( $message, 'success' );
                 }
             }
         }
@@ -129,10 +122,7 @@ trait AdminNotices {
                             1 === $count ? $singular : $plural
                     );
 
-                    printf(
-                            '<div class="notice notice-success is-dismissible"><p>%s</p></div>',
-                            esc_html( $message )
-                    );
+                    self::notice( $message, 'success' );
                 }
             }
         }
@@ -140,10 +130,7 @@ trait AdminNotices {
         // Error notice (always show, not action-specific)
         if ( 'action_failed' === Request::text( 'error' ) && ! isset( $config['row_actions'][ $row_action ]['notice'] ) ) {
             // A row action that failed and has no wording for that either.
-            printf(
-                    '<div class="notice notice-error is-dismissible"><p>%s</p></div>',
-                    esc_html__( 'That could not be done. Please try again.', 'sugarcommerce' )
-            );
+            self::notice( __( 'That could not be done. Please try again.', 'sugarcommerce' ), 'error' );
         } elseif ( Request::has( 'error' ) ) {
             // A code, never the words: anyone can send a link, so text read
             // from the address would let them put an official-looking
@@ -155,10 +142,7 @@ trait AdminNotices {
             if ( '' !== $error && 'action_failed' !== $error ) {
                 $known = $config['errors'][ $error ] ?? null;
 
-                printf(
-                        '<div class="notice notice-error is-dismissible"><p>%s</p></div>',
-                        esc_html( is_string( $known ) && '' !== $known ? $known : __( 'That could not be done. Please try again.', 'sugarcommerce' ) )
-                );
+                self::notice( is_string( $known ) && '' !== $known ? $known : __( 'That could not be done. Please try again.', 'sugarcommerce' ), 'error' );
             }
         }
 
@@ -183,19 +167,7 @@ trait AdminNotices {
                 continue;
             }
 
-            $type        = $notice['type'] ?? 'info';
-            $dismissible = $notice['dismissible'] ?? true;
-            $class       = 'notice notice-' . esc_attr( $type );
-
-            if ( $dismissible ) {
-                $class .= ' is-dismissible';
-            }
-
-            printf(
-                    '<div class="%s"><p>%s</p></div>',
-                    esc_attr( $class ),
-                    esc_html( $notice['message'] )
-            );
+            self::notice( (string) $notice['message'], (string) ( $notice['type'] ?? 'info' ), (bool) ( $notice['dismissible'] ?? true ) );
         }
     }
 
@@ -230,11 +202,7 @@ trait AdminNotices {
             $notice = call_user_func( $notice_config, Request::all() );
             if ( is_array( $notice ) && ! empty( $notice['message'] ) ) {
                 $type = $notice['type'] ?? 'success';
-                printf(
-                        '<div class="notice notice-%s is-dismissible"><p>%s</p></div>',
-                        esc_attr( $type ),
-                        esc_html( $notice['message'] )
-                );
+                self::notice( (string) $notice['message'], (string) $type );
             }
 
             return;
@@ -249,10 +217,7 @@ trait AdminNotices {
         $is_error = Request::has( 'error' ) || ( Request::has( 'updated' ) && 0 === Request::count( 'updated' ) );
 
         if ( $is_error && ! empty( $notice_config['error'] ) ) {
-            printf(
-                    '<div class="notice notice-error is-dismissible"><p>%s</p></div>',
-                    esc_html( $notice_config['error'] )
-            );
+            self::notice( (string) $notice_config['error'], 'error' );
         } elseif ( ! $is_error && ! empty( $notice_config['success'] ) ) {
             $message = $notice_config['success'];
 
@@ -261,10 +226,32 @@ trait AdminNotices {
                 $message = sprintf( $message, $count );
             }
 
-            printf(
-                    '<div class="notice notice-success is-dismissible"><p>%s</p></div>',
-                    esc_html( $message )
-            );
+            self::notice( (string) $message, 'success' );
         }
+    }
+
+    /**
+     * Print one notice, in core's markup.
+     *
+     * wp_admin_notice() is the markup these were written out by hand in,
+     * and runs core's `wp_admin_notice_args` and `wp_admin_notice_markup`
+     * filters. Core does not escape the message, so it is escaped here: none
+     * of these is HTML.
+     *
+     * @param string $message     The sentence.
+     * @param string $type        `success`, `error`, `warning` or `info`.
+     * @param bool   $dismissible Whether it can be closed.
+     *
+     * @return void
+     * @since 1.0.0
+     */
+    private static function notice( string $message, string $type, bool $dismissible = true ): void {
+        wp_admin_notice(
+            esc_html( $message ),
+            [
+                'type'        => sanitize_html_class( $type ),
+                'dismissible' => $dismissible,
+            ]
+        );
     }
 }

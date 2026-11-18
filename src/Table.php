@@ -154,8 +154,8 @@ class Table extends WP_List_Table {
     /**
      * Items per page
      *
-     * Number of items to display per page. Retrieved from user meta
-     * (screen options) or falls back to config default.
+     * Number of items to display per page. Read by core from the user's
+     * screen option, falling back to the config default.
      *
      * @since 1.0.0
      * @var int
@@ -194,8 +194,11 @@ class Table extends WP_List_Table {
             $this->status = '';
         }
 
-        // Get per page from screen options or use config default
-        $this->per_page = $this->get_items_per_page( 'per_page', (int) ( $config['per_page'] ?? 30 ) );
+        // Core's reading: what this person saved in Screen Options under
+        // the table's own option, else the table's default, then core's
+        // "{$option}" filter. It needs no screen, so an ajax request reads
+        // the same number the page did.
+        $this->per_page = (int) $this->get_items_per_page( Tables::per_page_option( $id ), (int) ( $config['per_page'] ?? 30 ) );
 
         // Initialize parent WP_List_Table
         parent::__construct( [
@@ -322,52 +325,4 @@ class Table extends WP_List_Table {
 /* =========================================================================
      * PREPARATION & DISPLAY
      * ========================================================================= */
-
-/* =========================================================================
-     * HELPER METHODS
-     * ========================================================================= */
-
-    /**
-     * Get items per page from screen options
-     *
-     * Retrieves the user's preferred items per page from their user meta,
-     * falling back to the default from screen options or config.
-     *
-     * @param string $option        Option name (unused, kept for compatibility).
-     * @param int    $default_value Default value from config.
-     *
-     * @return int Items per page.
-     * @since 1.0.0
-     *
-     */
-    protected function get_items_per_page( $option, $default_value = 30 ): int {
-        // An ajax request -- a quick edit saving and drawing its row back --
-        // never loads the screen API, so the function itself is missing
-        // there. The default is what the page would have used anyway; the
-        // one row being drawn does not page.
-        if ( ! function_exists( 'get_current_screen' ) ) {
-            return $default_value;
-        }
-
-        $screen = get_current_screen();
-
-        if ( ! $screen ) {
-            return $default_value;
-        }
-
-        $option_name = $screen->get_option( 'per_page', 'option' );
-
-        if ( empty( $option_name ) ) {
-            return $default_value;
-        }
-
-        $user     = get_current_user_id();
-        $per_page = get_user_meta( $user, $option_name, true );
-
-        if ( empty( $per_page ) || $per_page < 1 ) {
-            $per_page = $screen->get_option( 'per_page', 'default' ) ?: $default_value;
-        }
-
-        return absint( $per_page );
-    }
 }

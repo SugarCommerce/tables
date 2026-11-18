@@ -392,15 +392,19 @@ final class ActionNotice {
 	 *
 	 * @param array{message: string, type: string} $notice The sentence.
 	 *
-	 * @return string Escaped markup.
+	 * @return string Markup, the message escaped.
 	 */
 	public static function render( array $notice ): string {
 		$type = in_array( $notice['type'] ?? '', [ 'success', 'warning', 'error', 'info' ], true ) ? $notice['type'] : 'success';
 
-		return sprintf(
-			'<div class="notice notice-%1$s is-dismissible"><p>%2$s</p></div>',
-			esc_attr( $type ),
-			esc_html( (string) $notice['message'] )
+		// Core's markup and filters; the message is escaped here, as core
+		// does not.
+		return wp_get_admin_notice(
+			esc_html( (string) $notice['message'] ),
+			[
+				'type'        => $type,
+				'dismissible' => true,
+			]
 		);
 	}
 

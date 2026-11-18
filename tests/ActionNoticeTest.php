@@ -358,6 +358,33 @@ final class ActionNoticeTest extends TestCase {
 	}
 
 	/**
+	 * The notices are core's markup, as they were when written by hand: a
+	 * count of deletions, and one a filter adds that cannot be dismissed.
+	 */
+	public function test_the_notices_are_cores_markup(): void {
+		$config = $this->register();
+
+		$_GET['deleted'] = '2';
+
+		add_filter(
+			'sugarcommerce_table_admin_notices_people',
+			static fn(): array => [
+				[
+					'message'     => 'Stock & prices are syncing.',
+					'type'        => 'warning',
+					'dismissible' => false,
+				],
+			]
+		);
+
+		$this->assertSame(
+			'<div class="notice notice-success is-dismissible"><p>2 customers deleted successfully.</p></div>'
+			. '<div class="notice notice-warning"><p>Stock &amp; prices are syncing.</p></div>',
+			self::notices( $config )
+		);
+	}
+
+	/**
 	 * Text in `?error=` is never printed: anyone can send a link, and the
 	 * page would show their wording as an official notice.
 	 */

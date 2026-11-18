@@ -241,9 +241,11 @@ class ParentMenu {
 	public static function fix_menus(): void {
 		global $submenu;
 
-		foreach ( self::$menus as $slug => $args ) {
-			if ( isset( $submenu[ $slug ] ) ) {
-				unset( $submenu[ $slug ][0] );
+		foreach ( array_keys( self::$menus ) as $slug ) {
+			// Core's own way to take an entry out: the one that links to
+			// the parent itself. It leaves a gap at [0], which core's menu
+			// skips but anything reading the first entry would not.
+			if ( false !== remove_submenu_page( $slug, $slug ) ) {
 				$submenu[ $slug ] = array_values( $submenu[ $slug ] );
 			}
 		}
