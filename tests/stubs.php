@@ -58,6 +58,8 @@ function rt_reset_globals(): void {
 		$GLOBALS['rt_nonce_actions'],
 		$GLOBALS['rt_flyouts'],
 		$GLOBALS['rt_localized'],
+		$GLOBALS['rt_scripts'],
+		$GLOBALS['rt_enqueued_scripts'],
 		$GLOBALS['rt_routes'],
 		$GLOBALS['rt_meta_by_user'],
 		$GLOBALS['rt_user_options'],
@@ -255,14 +257,26 @@ if ( ! function_exists( 'wp_enqueue_style' ) ) {
 	}
 }
 
+// Scripts are kept, by handle, for the tests of what each screen loads:
+// [ src, deps, ver, args ].
 if ( ! function_exists( 'wp_register_script' ) ) {
-	function wp_register_script( ...$args ) {
+	function wp_register_script( $handle, $src = '', $deps = [], $ver = false, $args = [] ) {
+		$GLOBALS['rt_scripts'][ $handle ] = [ $src, $deps, $ver, $args ];
+
 		return true;
 	}
 }
 
 if ( ! function_exists( 'wp_enqueue_script' ) ) {
-	function wp_enqueue_script( ...$args ) {
+	function wp_enqueue_script( $handle, ...$args ) {
+		$GLOBALS['rt_enqueued_scripts'][] = $handle;
+
+		return true;
+	}
+}
+
+if ( ! function_exists( 'wp_set_script_translations' ) ) {
+	function wp_set_script_translations( ...$args ) {
 		return true;
 	}
 }

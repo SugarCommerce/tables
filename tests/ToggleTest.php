@@ -481,20 +481,27 @@ final class ToggleTest extends TestCase {
 	}
 
 	/**
-	 * The script saves with the REST nonce, one press at a time, and asks
-	 * once before a press that needs asking about.
+	 * A screen with toggles loads the built script, with nothing of jQuery,
+	 * and hands it the REST nonce and each toggle under the name it has
+	 * always read. What the script does with them is tests/js/toggle.test.js.
 	 */
-	public function test_the_script(): void {
-		$script = (string) file_get_contents( dirname( __DIR__ ) . '/assets/js/toggle.js' );
+	public function test_the_screen_loads_the_built_script(): void {
+		$this->register();
+		$_GET['page'] = 'demo';
 
-		$this->assertStringContainsString( "'X-WP-Nonce': settings.nonce", $script );
-		$this->assertMatchesRegularExpression( "/getAttribute\\( 'aria-busy' \\) === 'true' \\)\\s*\\{\\s*return;/", $script );
-		$this->assertStringContainsString( "button.setAttribute( 'data-armed', '1' );", $script );
-		$this->assertStringContainsString( "replace(\n\t\t\t\t\t'{id}'", $script );
-		$this->assertStringNotContainsString( 'jQuery', $script );
-		// The icon is the server's markup, swapped in whole.
-		$this->assertStringNotContainsString( 'dashicons', $script );
-		$this->assertStringContainsString( "button.querySelector( '.sugarcommerce-icon' )", $script );
-		$this->assertStringContainsString( 'template.innerHTML = markup;', $script );
+		ToggleRoute::enqueue();
+
+		[ $src, $deps ] = $GLOBALS['rt_scripts']['sugarcommerce-tables-toggle'] ?? [ '', [] ];
+
+		$this->assertStringEndsWith( '/assets/build/toggle.js', (string) $src );
+		$this->assertContains( 'wp-a11y', $deps );
+		$this->assertSame( [], preg_grep( '/^jquery/', $deps ) );
+		$this->assertContains( 'sugarcommerce-tables-toggle', $GLOBALS['rt_enqueued_scripts'] ?? [] );
+
+		[ $name, $data ] = $GLOBALS['rt_localized']['sugarcommerce-tables-toggle'];
+
+		$this->assertSame( 'sugarCommerceToggles', $name );
+		$this->assertArrayHasKey( 'nonce', $data );
+		$this->assertArrayHasKey( 'demo:consent', $data['columns'] );
 	}
 }

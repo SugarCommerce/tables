@@ -423,9 +423,9 @@ final class Reorder {
 	/**
 	 * The script and stylesheet, on a screen whose table reorders.
 	 *
-	 * jQuery UI's sortable, which core ships and its own menu and widget
-	 * screens use; touch punch is what lets a finger drag what sortable only
-	 * lets a mouse drag.
+	 * The drag is the script's own, on pointer events, so a mouse, a pen and
+	 * a finger drag alike and neither jQuery UI's sortable nor touch punch is
+	 * loaded for it. It keeps sortable's classes, which reorder.css styles.
 	 *
 	 * @return void
 	 */
@@ -439,7 +439,7 @@ final class Reorder {
 		$reorder = (array) self::config( $config );
 
 		Assets::enqueue_style( Runtime::handle( 'reorder' ), __FILE__, 'css/reorder.css' );
-		Assets::enqueue_script( Runtime::handle( 'reorder' ), __FILE__, 'js/reorder.js', [ 'jquery-ui-sortable', 'jquery-touch-punch', 'wp-a11y' ] );
+		Assets::enqueue_built_script( Runtime::handle( 'reorder' ), __FILE__, 'reorder' );
 
 		wp_localize_script(
 			Runtime::handle( 'reorder' ),

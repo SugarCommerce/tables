@@ -399,7 +399,7 @@ final class InlineEdit {
 
 							<?php
 							// Core's quick edit writes its error box this way;
-							// inline-edit.js fills the p.error.
+							// the inline-edit script fills the p.error.
 							wp_admin_notice(
 								'<p class="error"></p>',
 								[

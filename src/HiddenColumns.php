@@ -34,8 +34,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * Which leaves the moment the column is switched on: core shows it there and
  * then, without asking the server for anything, and it would be a column of
- * blanks. assets/js/deferred-columns.js sees a column of placeholders being
- * shown, waits for core to have saved the choice, and loads the list again.
+ * blanks. The deferred-columns script (src/js/columns/deferred.js) sees a
+ * column of placeholders being shown, saves the choice as core does, and
+ * loads the list again once it is saved.
  *
  * @since 1.0.0
  */
@@ -158,11 +159,6 @@ final class HiddenColumns {
 
 		// The asset library's class, which a bundled copy prefixes, and not
 		// its global function, which belongs to whichever copy loaded first.
-		Assets::enqueue_script(
-			Runtime::handle( 'deferred-columns' ),
-			__FILE__,
-			'js/deferred-columns.js',
-			[ 'jquery' ]
-		);
+		Assets::enqueue_built_script( Runtime::handle( 'deferred-columns' ), __FILE__, 'deferred-columns' );
 	}
 }

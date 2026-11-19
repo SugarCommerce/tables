@@ -869,6 +869,67 @@ redraws the saved row from `callbacks.get_item`; leave that out and the save
 happens but the row does not change, which reads exactly like a save that
 failed.
 
+## The scripts
+
+Plain JavaScript in ES modules (`src/js`), each with one job, built by
+`@wordpress/scripts` into `assets/build` -- one file per script a screen
+loads, with an `.asset.php` naming the WordPress scripts it imports
+(`wp-a11y`, `wp-dom-ready`) and a version that changes with its contents.
+`SugarCommerce\Plugin\Assets::enqueue_built_script()` registers an entry from
+that file. No jQuery, jQuery UI or touch punch: none of them is a dependency
+any more.
+
+| Entry | Loaded by, on a table's screen | Modules |
+|---|---|---|
+| `reorder` | `Reorder::enqueue()`, when the table has `reorder` | `reorder/init` (puts it together), `reorder/order` (the order, the save, the numbering), `reorder/controls` (arrow keys, up and down buttons), `reorder/sortable` (the drag), `reorder/cells` (the widths held while a row is lifted) |
+| `inline-edit` | `Tables`' assets, when the table has `quick_edit` or `bulk_edit` | `inline-edit/editor` (open, save, close, bulk), `inline-edit/bind`, `inline-edit/fields`, `inline-edit/checklists`, `inline-edit/notice`, `inline-edit/post` |
+| `toggle` | `ToggleRoute::enqueue()`, when a column toggles | `toggle/press` (the click, asking first), `toggle/save`, `toggle/draw` |
+| `deferred-columns` | `HiddenColumns::enqueue()`, when a column is `deferred` | `columns/deferred` |
+
+`lib/config` is the one reader of what PHP handed over, `lib/dom` the few DOM
+helpers, `lib/form` the quick editor's fields as a request body (what jQuery's
+`serialize()` sent, byte for byte) and `lib/text` the filling of a translated
+sentence. The strings come from PHP, already translated, as they always have.
+
+What other code may rely on is unchanged:
+
+* the handles (`Runtime::handle( 'reorder' )` and the rest), in the footer;
+* the localized objects `sugarCommerceReorder`, `sugarCommerceInlineEdit` and
+  `sugarCommerceToggles`, and `window.sugarCommerceInlineEditor` -- the quick
+  editor, with `edit()`, `save()`, `revert()` and `setBulk()`;
+* what is posted: the reorder action's `action`, `nonce` and `ids[]`; Quick
+  Edit's fields, `action` and `item_id`, urlencoded with `X-Requested-With`;
+  a toggle's JSON with `X-WP-Nonce`; the `X-SugarCommerce-Table-Notice` header
+  read back;
+* the classes: the drag keeps jQuery UI sortable's (`ui-sortable`,
+  `ui-sortable-handle`, `ui-sortable-helper`, `ui-sortable-placeholder`), which
+  `reorder.css` styles, and the placeholder row is still
+  `sugarcommerce-reorder-placeholder`;
+* `wp-updates-notice-added`, dispatched on the document after a quick edit's
+  notice goes up, which core's jQuery listener hears and makes dismissible.
+
+The drag is pointer events, so a mouse, a pen and a finger drag alike: it
+starts on a handle once the pointer moves, holds the row at its size and its
+cells and the heading's at their widths, moves along the list and never past
+its ends, scrolls the page near the window's edge, and posts the order only
+when the row lands somewhere new. A cancelled touch puts the row back.
+
+A deferred column used to wait for core's own `hidden-columns` request through
+jQuery's `ajaxComplete`. It now saves the same choice itself -- the same
+action, the screen's nonce and the columns core has marked hidden -- and loads
+the list again when its request answers.
+
+```bash
+npm ci
+npm run build      # assets/build, committed
+npm run start      # rebuild on change
+npm run test:js    # Vitest, in jsdom (composer test:js runs it too)
+npm run lint:js
+```
+
+The build's files are what ship. CI builds again and fails when the result
+differs from what was committed.
+
 ## Moving from arraypress/wp-register-tables
 
 Every configuration key, cell type, class and method keeps its name; the
@@ -893,6 +954,7 @@ config a list passes today is read the same way.
 | handles `list-table-styles`, `list-table-inline-edit`, `list-table-deferred-columns`, `arraypress-table-toggle`, `arraypress-table-reorder`, `arraypress-table-highlights` | `Runtime::handle()`: `sugarcommerce-tables`, `sugarcommerce-tables-inline-edit`, `…-deferred-columns`, `…-toggle`, `…-reorder`, `…-highlights` |
 | `Bars::HANDLE`, `Rows::CACHE` (`arraypress-table-seen`) | `Bars::handle()`, `Rows::cache_group()` (`sugarcommerce-tables-seen`) |
 | JS globals `arrayPressInlineEdit`, `arrayPressInlineEditor`, `arrayPressToggles`, `arrayPressReorder`; header `X-ArrayPress-Table-Notice` | `sugarCommerceInlineEdit`, `sugarCommerceInlineEditor`, `sugarCommerceToggles`, `sugarCommerceReorder`; `X-SugarCommerce-Table-Notice` |
+| `assets/js/*.js`, with `jquery`, `jquery-ui-sortable` and `jquery-touch-punch` | `assets/build/*.js` built from `src/js`, depending on `wp-a11y` and `wp-dom-ready` only; see [The scripts](#the-scripts) |
 | filter `register_tables_default_currency` | `SugarCommerce\Money\Money::set_default_currency()`, once per plugin |
 | wp-register-flyouts `Registry`, wp-inline-sync `Registry` | sugarcommerce/flyouts `Registry`, sugarcommerce/jobs `Sync` |
 | wp-field-kit, wp-status-badge, wp-countries, wp-date-utils, wp-money, wp-format-utils, wp-composer-assets | sugarcommerce/fields, status-badge, geo, dates, money, text, plugin |

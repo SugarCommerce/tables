@@ -96,12 +96,7 @@ trait AssetManager {
         // Only when there is something to edit inline. A script that binds
         // nothing is still a request.
         if ( ! empty( $config['bulk_edit'] ) || ! empty( $config['quick_edit'] ) ) {
-            Assets::enqueue_script(
-                    Runtime::handle( 'inline-edit' ),
-                    __FILE__,
-                    'js/inline-edit.js',
-                    [ 'jquery', 'wp-a11y' ]
-            );
+            Assets::enqueue_built_script( Runtime::handle( 'inline-edit' ), __FILE__, 'inline-edit' );
 
             // Every string the script can show, and where to post to.
             // Hard-coded English in the script would be untranslatable, and

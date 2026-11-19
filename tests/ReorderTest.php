@@ -341,15 +341,28 @@ final class ReorderTest extends TestCase {
 	}
 
 	/**
-	 * The script posts the table's action and the ids, and never starts a
-	 * drag on a tick box, a link or a step button.
+	 * A screen whose table reorders loads the built script -- its own drag,
+	 * not jQuery UI's sortable or touch punch -- and hands it where to post,
+	 * the table's action and nonce, and the two sentences. What the script
+	 * does with them is tests/js/reorder-*.test.js.
 	 */
-	public function test_the_script(): void {
-		$script = (string) file_get_contents( dirname( __DIR__ ) . '/assets/js/reorder.js' );
+	public function test_the_screen_loads_the_built_script(): void {
+		$this->register();
+		$_GET['page'] = 'demo';
 
-		$this->assertStringContainsString( "body.append( 'action', config.action || '' );", $script );
-		$this->assertStringContainsString( "'ids[]'", $script );
-		$this->assertStringContainsString( "cancel: 'input, textarea, select, option, a, .sugarcommerce-reorder__step'", $script );
-		$this->assertStringContainsString( 'ticket === pending', $script );
+		Reorder::enqueue();
+
+		[ $src, $deps ] = $GLOBALS['rt_scripts']['sugarcommerce-tables-reorder'] ?? [ '', [] ];
+
+		$this->assertStringEndsWith( '/assets/build/reorder.js', (string) $src );
+		$this->assertContains( 'wp-a11y', $deps );
+		$this->assertSame( [], preg_grep( '/^jquery/', $deps ) );
+
+		[ $name, $data ] = $GLOBALS['rt_localized']['sugarcommerce-tables-reorder'];
+
+		$this->assertSame( 'sugarCommerceReorder', $name );
+		$this->assertSame( 'sugarcommerce-tables-reorder-demo', $data['action'] );
+		$this->assertSame( [ 'url', 'action', 'nonce', 'i18n' ], array_keys( $data ) );
+		$this->assertSame( [ 'moved', 'failed' ], array_keys( $data['i18n'] ) );
 	}
 }

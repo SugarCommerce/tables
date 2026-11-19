@@ -257,7 +257,7 @@ final class ToggleRoute {
 		}
 
 		Assets::enqueue_style( Runtime::handle( 'toggle' ), __FILE__, 'css/toggle.css' );
-		Assets::enqueue_script( Runtime::handle( 'toggle' ), __FILE__, 'js/toggle.js', [ 'wp-a11y' ] );
+		Assets::enqueue_built_script( Runtime::handle( 'toggle' ), __FILE__, 'toggle' );
 
 		wp_localize_script(
 			Runtime::handle( 'toggle' ),

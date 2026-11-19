@@ -80,10 +80,13 @@ final class RuntimeTest extends TestCase {
 		( new ReflectionMethod( Tables::class, 'do_enqueue_assets' ) )->invoke( null, [ 'quick_edit' => [ 'status' => [ 'label' => 'Status' ] ] ] );
 
 		$this->assertSame( 'sugarcommerce_tables_quick_edit', $GLOBALS['rt_localized']['sugarcommerce-tables-inline-edit'][1]['action'] ?? null );
-		$this->assertStringContainsString(
-			"'&action=' + encodeURIComponent( settings.action || '' )",
-			(string) file_get_contents( dirname( __DIR__ ) . '/assets/js/inline-edit.js' )
-		);
+
+		// The script posts it as `action` (tests/js/inline-edit.test.js),
+		// from the build, with nothing of jQuery.
+		[ $src, $deps ] = $GLOBALS['rt_scripts']['sugarcommerce-tables-inline-edit'] ?? [ '', [] ];
+
+		$this->assertStringEndsWith( '/assets/build/inline-edit.js', (string) $src );
+		$this->assertSame( [], preg_grep( '/^jquery/', $deps ) );
 	}
 
 	/**
