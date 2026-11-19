@@ -85,8 +85,13 @@
 	box-shadow: inset 0 0 0 1px #c5d9ed;
 }
 
+/* The row being dragged is a table of its own, so it lays its cells out by
+   its own rules. Fixed, as the list table is: the widths the script holds
+   its cells at are the widths they get, and a long name is cut short as it
+   was in the list rather than pushing its column wider than the header. */
 .wp-list-table tr.ui-sortable-helper {
 	display: table;
+	table-layout: fixed;
 	background: #fff;
 	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
 }

@@ -227,6 +227,67 @@
 		button.focus();
 	} );
 
+	/**
+	 * The cells of a row that take up a column on the screen.
+	 *
+	 * A column switched off in Screen Options is still in every row, as a
+	 * cell core hides. It takes no room, so it is no column.
+	 *
+	 * @param {Element} row The row.
+	 * @return {Element[]} Its cells that are shown.
+	 */
+	function visibleCells( row ) {
+		return Array.from( row.children ).filter(
+			( cell ) => 'none' !== window.getComputedStyle( cell ).display
+		);
+	}
+
+	/**
+	 * How many columns a row spans on the screen.
+	 *
+	 * @param {Element} row The row.
+	 * @return {number} Its shown columns.
+	 */
+	function span( row ) {
+		return visibleCells( row ).reduce(
+			( total, cell ) => total + ( cell.colSpan || 1 ),
+			0
+		);
+	}
+
+	/**
+	 * Hold each shown cell of a row at the width it has now.
+	 *
+	 * Measured first and set after, so setting one cannot move the next
+	 * before it is read; and set on the cell's border box, which is what
+	 * was measured, not its content, which is narrower by the padding.
+	 *
+	 * @param {Element} row The row.
+	 */
+	function hold( row ) {
+		const cells = visibleCells( row );
+		const widths = cells.map(
+			( cell ) => cell.getBoundingClientRect().width
+		);
+
+		cells.forEach( ( cell, index ) => {
+			cell.style.boxSizing = 'border-box';
+			cell.style.width = widths[ index ] + 'px';
+		} );
+	}
+
+	/**
+	 * Let a row's cells take whatever width the table gives them again.
+	 *
+	 * @param {Element} row The row.
+	 */
+	function release( row ) {
+		Array.from( row.children ).forEach( ( cell ) => {
+			cell.style.boxSizing = '';
+			cell.style.width = '';
+		} );
+	}
+
 	if ( rows().length > 1 && $ && $.fn.sortable ) {
 		$( list ).sortable( {
 			items: '> tr',
@@ -245,28 +306,26 @@
 
 			// A table row lifted out of its table forgets its column
 			// widths, and the row being dragged collapses to the width of
-			// its text. Each cell is told the width it had.
+			// its text. Each cell is held at the width it had.
 			helper( event, row ) {
-				const widths = row
-					.children()
-					.map( function () {
-						return $( this ).outerWidth();
-					} )
-					.get();
-
-				row.children().each( function ( index ) {
-					$( this ).css( 'width', widths[ index ] );
-				} );
+				hold( row.get( 0 ) );
 
 				return row;
 			},
+
+			// The gap the row will drop into is one cell across the
+			// columns that are shown. Spanning the hidden ones as well
+			// gives the table columns its header does not have, and while
+			// the row is held every other row is squeezed up to leave an
+			// empty band down the right where they would be.
 			start( event, ui ) {
-				ui.placeholder.html(
-					'<td colspan="' + ui.item.children().length + '"></td>'
-				);
+				const cell = document.createElement( 'td' );
+
+				cell.colSpan = span( ui.item.get( 0 ) );
+				ui.placeholder.get( 0 ).replaceChildren( cell );
 			},
 			stop( event, ui ) {
-				ui.item.children().css( 'width', '' );
+				release( ui.item.get( 0 ) );
 			},
 			update( event, ui ) {
 				save( ui.item.get( 0 ) );
