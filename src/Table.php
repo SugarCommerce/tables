@@ -60,7 +60,8 @@ if ( ! class_exists( 'WP_List_Table' ) ) {
  *                                view under it (see Traits\Footer)
  * - `sortable`         (array)    List of sortable columns
  * - `hidden_columns`   (array)    Columns hidden by default
- * - `primary_column`   (string)   Column for row actions
+ * - `primary_column`   (string)   Column for row actions, and all a phone shows of a row
+ * - `summary`          (array|false) Columns repeated under the title on a phone
  * - `bulk_actions`     (array)    Bulk action definitions
  * - `row_actions`      (array|callable) Row action definitions or callback
  * - `views`            (array)    Status view definitions
@@ -219,6 +220,12 @@ class Table extends WP_List_Table {
      * are manageable via screen options. This class causes row actions to
      * be always visible instead of on hover.
      *
+     * And `fixed`, as core's Plugins screen leaves it off: a fixed table
+     * gives every column the same width unless a stylesheet names it, and
+     * core's stylesheet names only its own columns. Laid out by what is in
+     * them, a price is as wide as a price and a name gets the rest (see
+     * ColumnLayout).
+     *
      * @return array Array of CSS class names.
      * @since 1.0.0
      *
@@ -227,7 +234,7 @@ class Table extends WP_List_Table {
         $classes = parent::get_table_classes();
 
         // Remove excerpt view class to keep row actions hover behavior
-        $classes = array_diff( $classes, [ 'table-view-excerpt' ] );
+        $classes = array_diff( $classes, [ 'table-view-excerpt', 'fixed' ] );
 
         return array_values( $classes );
     }

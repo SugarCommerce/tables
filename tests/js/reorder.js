@@ -178,7 +178,14 @@ function load( rows ) {
 
 	$.fn = { sortable() {} };
 
-	const list = { children: rows, addEventListener() {} };
+	const list = {
+		children: rows,
+		addEventListener() {},
+		parentElement: {
+			querySelector: ( selector ) =>
+				'thead tr' === selector ? heading : null,
+		},
+	};
 	const context = {
 		jQuery: $,
 		sugarCommerceReorder: { i18n: {} },
@@ -221,6 +228,9 @@ function placeholder() {
 		},
 	};
 }
+
+// The table's heading row, held while a row is dragged.
+const heading = row( [ 34, 182, [ 0, true ], 141, [ 0, true ], 98 ] );
 
 // A tick box, four columns, two of them switched off in Screen Options.
 const lifted = row( [ 34, 182, [ 0, true ], 141, [ 0, true ], 98 ] );
@@ -287,8 +297,12 @@ is( returned.get(), lifted, 'the helper is the row itself' );
 	);
 } );
 
+// The heading is held too, so the columns do not move under the drag.
+is( heading.children[ 1 ].style.width, '182px', 'the heading keeps its widths while a row is dragged' );
+
 // Landing lets the widths go.
 options.stop( {}, { item: wrap( lifted ) } );
+is( heading.children[ 1 ].style.width || '', '', 'the heading lets go of its widths on landing' );
 lifted.children.forEach( ( child, index ) => {
 	is( child.style.width || '', '', `cell ${ index } lets go of its width` );
 	is(

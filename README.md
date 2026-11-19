@@ -24,6 +24,8 @@ message follows.
 * Read rows, counts and related rows from a BerlinDB table by naming its query class
 * Offer each row its next status, and say what moved by name
 * Format a column as a price, a date, a status badge or a country, by naming the type
+* Lay columns out by what is in them: a figure's column is as wide as the figure, the names get the rest
+* Show a row's status and amount under its title on a phone, where core folds the other columns away
 * Draw a person, or one thing with its picture, the same way on every list
 * Let each person choose relative or exact dates, and skip columns nobody is looking at
 * Make a cell a switch that saves itself -- a star, or a line of words
@@ -79,6 +81,39 @@ of its own takes `ParentMenu::register( 'my-plugin', __( 'Shop',
 'my-plugin' ), [ 'icon' => 'dashicons-cart' ] )` and `'parent_slug' =>
 'my-plugin'`; one drawn inside a page you made yourself is
 `Tables::renderer( 'my_orders' )`, as that page's callback.
+
+## Widths, the primary column and phones
+
+Nobody sets a width. The table is laid out by what is in it (core's `fixed`
+layout is left off, as on core's Plugins screen), and a column whose type is
+a figure -- `price`, `count`, `percentage`, `rate`, `duration`, `file_size`,
+`date`, `status`, `boolean`, `color`, `image`, a `toggle` or the reorder
+handle -- is drawn on one line and is as wide as that line. The columns with
+words in them share what is left. A column says otherwise with `compact`:
+
+```php
+'marketing' => [ 'label' => __( 'Marketing', 'my-plugin' ), 'compact' => true ],  // a short line of words
+'last_order' => [ 'label' => __( 'Last Order', 'my-plugin' ), 'compact' => false ], // a date with a product under it
+```
+
+Row actions take no room until the row is pointed at or has the keyboard's
+focus (on a phone, which cannot point, they are shown as core shows them).
+
+On a phone core shows the primary column alone, with the rest behind its
+"Show more details" toggle, so the primary column is the one that says what
+the row is: `primary_column`, or a column's `'primary' => true`, and when
+neither is set the first column that is not a bare `id`. A status and an
+amount are repeated under its title there -- the first `status` and the
+first `price` column -- or the columns `summary` names, or none with
+`'summary' => false`:
+
+```php
+'primary_column' => 'customer',
+'summary'        => [ 'status', 'total' ],
+```
+
+Columns before the primary one fold away on a phone too, and an opened row
+lists the primary column first.
 
 ## A title with states
 
@@ -309,7 +344,6 @@ the capability sees the state and no button.
 'columns' => [
 	'featured' => [
 		'label'  => SugarCommerce\Tables\Toggle::heading( __( 'Featured', 'my-plugin' ) ),
-		'width'  => '4em',
 		'toggle' => [
 			'style'        => 'star',
 			'on'           => __( 'Featured', 'my-plugin' ),
@@ -868,6 +902,9 @@ config a list passes today is read the same way.
 | notices printed by hand; `ActionNotice::render()` | `wp_admin_notice()` / `wp_get_admin_notice()`, the same markup |
 | `ParentMenu::fix_menus()` unset `[0]` | `remove_submenu_page( $slug, $slug )`: only the entry that links to the parent goes |
 | relative dates | sugarcommerce/dates `Site::relative()` (`ListDate::relative()` calls it) |
+| `fixed` table layout: every column the same width unless given one | laid out by its contents; figures narrow (`compact`), see [Widths](#widths-the-primary-column-and-phones) |
+| primary column: the first column | the first that is not a bare `id`, and its row's status and amount under the title on a phone (`summary`) |
+| hidden row actions kept their height under every title | they take none until shown |
 
 What somebody chose is kept: the user meta keys (`{table_id}_seen`, the date
 preference) and the BerlinDB source's options are unchanged. Status badge

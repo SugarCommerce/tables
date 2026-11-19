@@ -288,6 +288,10 @@
 		} );
 	}
 
+	const table = list.parentElement;
+	const heading =
+		table && table.querySelector ? table.querySelector( 'thead tr' ) : null;
+
 	if ( rows().length > 1 && $ && $.fn.sortable ) {
 		$( list ).sortable( {
 			items: '> tr',
@@ -306,9 +310,16 @@
 
 			// A table row lifted out of its table forgets its column
 			// widths, and the row being dragged collapses to the width of
-			// its text. Each cell is held at the width it had.
+			// its text. Each cell is held at the width it had. So is the
+			// heading's: the table is laid out by what is in it, and with
+			// a row taken out the columns would otherwise shift under the
+			// drag.
 			helper( event, row ) {
 				hold( row.get( 0 ) );
+
+				if ( heading ) {
+					hold( heading );
+				}
 
 				return row;
 			},
@@ -326,6 +337,10 @@
 			},
 			stop( event, ui ) {
 				release( ui.item.get( 0 ) );
+
+				if ( heading ) {
+					release( heading );
+				}
 			},
 			update( event, ui ) {
 				save( ui.item.get( 0 ) );

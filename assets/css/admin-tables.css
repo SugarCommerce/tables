@@ -348,6 +348,97 @@ a.column-term:hover {
     visibility: visible;
 }
 
+/* And while they are hidden they take no room. Core only moves them off to
+   the left, so a row kept a band as tall as its actions -- three lines of
+   them in a narrow column -- empty under every title. Still in the flow,
+   so the column is as wide whether they show or not; a phone (`.mobile`,
+   which has no hover) shows them as core does. */
+.admin-table:not(.mobile) .wp-list-table tr:not(:hover):not(:focus-within) .row-actions {
+    height: 0;
+    padding-top: 0;
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   Column widths
+
+   The table is laid out by what is in it (Table::get_table_classes() leaves
+   core's `fixed` off) and a figure's column is as wide as the figure
+   (ColumnLayout, written per column with the table's inline styles). A
+   long word -- an address, a link -- may break anywhere, so it never
+   pushes the table past the screen; a person's name and a product are
+   clamped to their line for the same reason (Cells\Person, Cells\Item).
+   ========================================================================== */
+
+.wp-list-table td {
+    overflow-wrap: anywhere;
+}
+
+/* A sortable heading's word and arrows side by side, as core floats them,
+   but kept together: floated, they stacked in a column only as wide as a
+   figure. */
+.wp-list-table th.sortable a,
+.wp-list-table th.sorted a {
+    display: flex;
+}
+
+/* ==========================================================================
+   A row on a phone: its title and what it is
+   ========================================================================== */
+
+/* The facts repeated under the title (ColumnLayout::summary()): only where
+   the columns they come from are folded away. */
+.sugarcommerce-row-summary {
+    display: none;
+}
+
+@media screen and (max-width: 782px) {
+
+    .sugarcommerce-row-summary {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 4px 12px;
+        margin-top: 6px;
+        color: var(--at-text-secondary);
+        font-weight: 400;
+    }
+
+    /* Opened with "Show more details", the cells are there themselves. */
+    .wp-list-table .is-expanded .sugarcommerce-row-summary {
+        display: none;
+    }
+
+    /* Core folds away the columns after the primary one. A table whose
+       primary column is not its first -- an id, then the customer -- has
+       the ones before it folded too, and the primary column first when a
+       row is opened. */
+    .wp-list-table thead th:not(.check-column):not(.column-primary),
+    .wp-list-table tfoot th:not(.check-column):not(.column-primary),
+    .wp-list-table tr:not(.inline-edit-row):not(.no-items) td:not(.check-column):not(.column-primary) {
+        display: none;
+    }
+
+    /* Core's own spacing for an opened row's cells, for the ones before
+       the primary column too: the label in the left third, the value in
+       the rest, not printed over each other. */
+    .wp-list-table tr:not(.inline-edit-row):not(.no-items) td:not(.check-column) {
+        flex: 0 1 100%;
+    }
+
+    .wp-list-table tr:not(.inline-edit-row):not(.no-items) td:not(.check-column):not(.column-primary) {
+        padding: 3px 8px 3px 35%;
+    }
+
+    .wp-list-table tr > .check-column {
+        order: -2;
+    }
+
+    .wp-list-table tr > .column-primary {
+        order: -1;
+    }
+}
+
 /* ==========================================================================
    Table Tweaks
    ========================================================================== */
@@ -436,11 +527,20 @@ a.column-term:hover {
     min-width: 0;
 }
 
+/* Clamped to one line rather than kept from wrapping, as a person's name
+   is (Cells\Person): a line that cannot wrap is as wide as all of it to a
+   table laid out by its contents. */
+.sugarcommerce-item-title,
+.sugarcommerce-item-meta {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+}
+
 .sugarcommerce-item-title {
     max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 .sugarcommerce-item-more {
@@ -457,12 +557,8 @@ a.column-term:hover {
    white, 4.71 on core's stripe). The address under a person's name is the
    same. */
 .sugarcommerce-item-meta {
-    display: block;
-    overflow: hidden;
     color: #6b6f75;
     font-size: 12px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 /* A name and "+ 2 more" on a second line stay on the one line: the name
