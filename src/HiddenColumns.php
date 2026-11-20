@@ -34,7 +34,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * Which leaves the moment the column is switched on: core shows it there and
  * then, without asking the server for anything, and it would be a column of
- * blanks. The deferred-columns script (src/js/columns/deferred.js) sees a
+ * blanks. The deferred-columns script (assets/js/columns/deferred.js) sees a
  * column of placeholders being shown, saves the choice as core does, and
  * loads the list again once it is saved.
  *

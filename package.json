@@ -5,11 +5,11 @@
   "description": "The list tables' scripts -- reordering rows, Quick and Bulk Edit, toggle cells and deferred columns -- built to assets/build with @wordpress/scripts.",
   "license": "GPL-2.0-or-later",
   "scripts": {
-    "build": "wp-scripts build reorder=./src/js/reorder.js inline-edit=./src/js/inline-edit.js toggle=./src/js/toggle.js deferred-columns=./src/js/deferred-columns.js --output-path=assets/build",
-    "start": "wp-scripts start reorder=./src/js/reorder.js inline-edit=./src/js/inline-edit.js toggle=./src/js/toggle.js deferred-columns=./src/js/deferred-columns.js --output-path=assets/build",
+    "build": "wp-scripts build reorder=./assets/js/reorder.js inline-edit=./assets/js/inline-edit.js toggle=./assets/js/toggle.js deferred-columns=./assets/js/deferred-columns.js --output-path=assets/build",
+    "start": "wp-scripts start reorder=./assets/js/reorder.js inline-edit=./assets/js/inline-edit.js toggle=./assets/js/toggle.js deferred-columns=./assets/js/deferred-columns.js --output-path=assets/build",
     "test:js": "wp-scripts test-unit-js",
-    "lint:js": "wp-scripts lint-js src/js tests/js",
-    "format:js": "wp-scripts format src/js tests/js"
+    "lint:js": "wp-scripts lint-js assets/js tests/js",
+    "format:js": "wp-scripts format assets/js tests/js"
   },
   "devDependencies": {
     "@wordpress/a11y": "^5.2.0",

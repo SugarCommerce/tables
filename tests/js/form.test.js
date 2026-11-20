@@ -5,7 +5,7 @@
 
 import { expect, test } from 'vitest';
 
-import { fields, serialize } from '../../src/js/lib/form';
+import { fields, serialize } from '../../assets/js/lib/form';
 
 const row = ( markup ) => {
 	document.body.innerHTML = `<table><tbody><tr id="row"><td>${ markup }</td></tr></tbody></table>`;

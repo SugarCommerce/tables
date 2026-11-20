@@ -20,7 +20,7 @@
 # Continuous integration
 /.github export-ignore
 
-# The scripts' toolchain. The sources (src/js) and the build (assets/build)
+# The scripts' toolchain. The sources (assets/js) and the build (assets/build)
 # ship; what builds and tests them does not.
 /node_modules export-ignore
 /package-lock.json export-ignore

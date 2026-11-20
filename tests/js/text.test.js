@@ -4,7 +4,7 @@
 
 import { expect, test } from 'vitest';
 
-import { fill } from '../../src/js/lib/text';
+import { fill } from '../../assets/js/lib/text';
 
 test( 'numbered places take their values in the order the translator put them', () => {
 	expect( fill( '%2$s, then %1$s', 'a', 'b' ) ).toBe( 'b, then a' );

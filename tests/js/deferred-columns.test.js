@@ -12,7 +12,7 @@ import { beforeEach, expect, test, vi } from 'vitest';
 import {
 	hiddenColumns,
 	watchDeferredColumns,
-} from '../../src/js/columns/deferred';
+} from '../../assets/js/columns/deferred';
 import { flush } from './support/table';
 
 let fetch;

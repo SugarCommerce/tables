@@ -8,8 +8,8 @@
 
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { day } from '../../src/js/toggle/draw';
-import { bindToggles } from '../../src/js/toggle/press';
+import { day } from '../../assets/js/toggle/draw';
+import { bindToggles } from '../../assets/js/toggle/press';
 import { flush } from './support/table';
 
 const ON = '<svg class="sugarcommerce-icon is-on"></svg>';

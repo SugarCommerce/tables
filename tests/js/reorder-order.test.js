@@ -8,8 +8,8 @@
 
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { createOrder } from '../../src/js/reorder/order';
-import { initReorder } from '../../src/js/reorder/init';
+import { createOrder } from '../../assets/js/reorder/order';
+import { initReorder } from '../../assets/js/reorder/init';
 import { fakeFetch, flush, ids, reorderTable } from './support/table';
 
 const CONFIG = {

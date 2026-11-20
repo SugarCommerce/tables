@@ -110,4 +110,25 @@ final class StructureTest extends TestCase {
 
 		$this->assertSame( [], $wrong );
 	}
+
+	/**
+	 * src/ is PHP and nothing else: scripts and styles live under assets/.
+	 *
+	 * @return void
+	 */
+	public function test_src_holds_php_only(): void {
+		$src   = dirname( __DIR__ ) . '/src';
+		$other = [];
+		$files = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $src, FilesystemIterator::SKIP_DOTS ) );
+
+		foreach ( $files as $file ) {
+			if ( 'php' !== $file->getExtension() ) {
+				$other[] = substr( $file->getPathname(), strlen( $src ) + 1 );
+			}
+		}
+
+		sort( $other );
+
+		$this->assertSame( [], $other, 'Not PHP: scripts go in assets/js, styles in assets/css.' );
+	}
 }

@@ -4,7 +4,7 @@
 
 import { beforeEach, expect, test } from 'vitest';
 
-import { hide, show, siblings } from '../../src/js/lib/dom';
+import { hide, show, siblings } from '../../assets/js/lib/dom';
 
 beforeEach( () => {
 	document.head.innerHTML = '<style>.hidden { display: none; }</style>';

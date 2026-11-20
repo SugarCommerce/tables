@@ -18,8 +18,8 @@ import { join } from 'node:path';
 
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { fillGap, hold, release, span } from '../../src/js/reorder/cells';
-import { initReorder } from '../../src/js/reorder/init';
+import { fillGap, hold, release, span } from '../../assets/js/reorder/cells';
+import { initReorder } from '../../assets/js/reorder/init';
 import {
 	ROW,
 	TOP,

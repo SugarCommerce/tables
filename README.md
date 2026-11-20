@@ -871,7 +871,7 @@ failed.
 
 ## The scripts
 
-Plain JavaScript in ES modules (`src/js`), each with one job, built by
+Plain JavaScript in ES modules (`assets/js`), each with one job, built by
 `@wordpress/scripts` into `assets/build` -- one file per script a screen
 loads, with an `.asset.php` naming the WordPress scripts it imports
 (`wp-a11y`, `wp-dom-ready`) and a version that changes with its contents.
@@ -964,6 +964,8 @@ differs from what was committed.
   `src/Support/` (the request, the view, a row's fields, column layout and
   formatting, links into panels), `src/Utils/Runtime.php` (hook, handle
   and route names).
+* `src/` is PHP only. The scripts' sources are in `assets/js/`, built to
+  `assets/build/`; the styles are in `assets/css/`.
 
 ## Requirements
 

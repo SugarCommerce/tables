@@ -11,13 +11,13 @@
 
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { bindEditor } from '../../src/js/inline-edit/bind';
-import { createEditor } from '../../src/js/inline-edit/editor';
+import { bindEditor } from '../../assets/js/inline-edit/bind';
+import { createEditor } from '../../assets/js/inline-edit/editor';
 import {
 	describe as describeValue,
 	readField,
-} from '../../src/js/inline-edit/fields';
-import { readNotice } from '../../src/js/inline-edit/notice';
+} from '../../assets/js/inline-edit/fields';
+import { readNotice } from '../../assets/js/inline-edit/notice';
 import { fakePost, inlinePage, rowMarkup } from './support/inline';
 import { flush } from './support/table';
 
@@ -653,7 +653,7 @@ test( 'the entry binds the editors and keeps window.sugarCommerceInlineEditor', 
 	unbind();
 	window.sugarCommerceInlineEdit = SETTINGS;
 
-	await import( '../../src/js/inline-edit' );
+	await import( '../../assets/js/inline-edit' );
 	await flush();
 
 	const global = window.sugarCommerceInlineEditor;
