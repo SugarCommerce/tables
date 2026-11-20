@@ -989,6 +989,22 @@ if ( ! function_exists( 'wp_kses_post' ) ) {
 }
 
 /*
+ * Core's is_admin() and wp_doing_cron(): data's Component asks them before it
+ * builds its table objects. These tests run as the admin.
+ */
+if ( ! function_exists( 'is_admin' ) ) {
+	function is_admin() {
+		return true;
+	}
+}
+
+if ( ! function_exists( 'wp_doing_cron' ) ) {
+	function wp_doing_cron() {
+		return false;
+	}
+}
+
+/*
  * Core's remove_submenu_page() (wp-admin/includes/plugin.php).
  */
 if ( ! function_exists( 'remove_submenu_page' ) ) {
