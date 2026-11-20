@@ -12,14 +12,14 @@ import { fill } from '../lib/text';
 /**
  * The order of one list.
  *
- * @param {Element}  list           The list's tbody (#the-list).
- * @param {Object}   options        Options.
- * @param {Object}   options.config sugarCommerceReorder.
- * @param {Function} options.fetch  window.fetch, or a fake.
- * @param {Function} options.speak  wp.a11y.speak, or a fake.
+ * @param {Element}  list             The list's tbody (#the-list).
+ * @param {Object}   options          Options.
+ * @param {Object}   options.config   sugarCommerceReorder.
+ * @param {Function} options.apiFetch api-fetch, or a fake.
+ * @param {Function} options.speak    wp.a11y.speak, or a fake.
  * @return {Object} rows(), save(), step() and renumber().
  */
-export function createOrder( list, { config, fetch, speak } ) {
+export function createOrder( list, { config, apiFetch, speak } ) {
 	const i18n = config.i18n || {};
 
 	/**
@@ -106,20 +106,13 @@ export function createOrder( list, { config, fetch, speak } ) {
 	 */
 	const save = ( moved ) => {
 		const all = rows();
-		const body = new URLSearchParams();
 		const ticket = ++pending;
 
 		renumber();
 
-		body.append( 'action', config.action || '' );
-		body.append( 'nonce', config.nonce || '' );
-
-		all.forEach( ( row ) => {
-			body.append(
-				'ids[]',
-				row.querySelector( '.sugarcommerce-reorder' ).dataset.id
-			);
-		} );
+		const ids = all.map( ( row ) =>
+			Number( row.querySelector( '.sugarcommerce-reorder' ).dataset.id )
+		);
 
 		speak(
 			fill(
@@ -131,22 +124,16 @@ export function createOrder( list, { config, fetch, speak } ) {
 			'assertive'
 		);
 
-		return fetch( config.url, {
+		// The table's REST route; api-fetch sends and renews the nonce.
+		return apiFetch( {
+			path: config.path || '',
 			method: 'POST',
-			credentials: 'same-origin',
-			body,
-		} )
-			.then( ( response ) => response.json() )
-			.then( ( answer ) => {
-				if ( ticket === pending && ! ( answer && answer.success ) ) {
-					failed();
-				}
-			} )
-			.catch( () => {
-				if ( ticket === pending ) {
-					failed();
-				}
-			} );
+			data: { ids },
+		} ).catch( () => {
+			if ( ticket === pending ) {
+				failed();
+			}
+		} );
 	};
 
 	/**

@@ -11,8 +11,10 @@ namespace SugarCommerce\Tables\Tests;
 
 use SugarCommerce\Tables\Tables;
 use SugarCommerce\Tables\Editing\Reorder;
+use SugarCommerce\Tables\Editing\Routes;
 use SugarCommerce\Tables\Table;
 use PHPUnit\Framework\TestCase;
+use WP_REST_Request;
 
 /**
  * Rows somebody puts in order themselves.
@@ -290,46 +292,61 @@ final class ReorderTest extends TestCase {
 	}
 
 	/**
-	 * The request is checked against the table's own nonce.
+	 * The order is saved through the table's own REST route: ids typed and
+	 * bounded, the reorder capability asked, no admin-ajax action left.
 	 */
-	public function test_the_request_checks_the_nonce(): void {
+	public function test_the_order_is_saved_through_a_rest_route(): void {
 		$this->register();
+		Routes::register_routes();
 
-		$_POST['ids']      = [ '2', '1' ];
-		$_REQUEST['nonce'] = 'nonce';
+		$route = $GLOBALS['rt_routes']['sugarcommerce-tables/v1/demo/reorder'] ?? null;
 
-		try {
-			Reorder::handle( 'demo' );
-			$this->fail( 'No answer was sent.' );
-		} catch ( \RT_Json $json ) {
-			$this->assertTrue( $json->success );
-		}
+		$this->assertNotNull( $route );
+		$this->assertSame( 'POST', $route['methods'] );
+		$this->assertSame( 'array', $route['args']['ids']['type'] );
+		$this->assertTrue( $route['args']['ids']['required'] );
+		$this->assertSame( 1, $route['args']['ids']['minItems'] );
+		$this->assertSame( [ 'type' => 'integer', 'minimum' => 1 ], $route['args']['ids']['items'] );
+		$this->assertSame( [], preg_grep( '/^wp_ajax_/', array_keys( $GLOBALS['rt_actions'] ?? [] ) ) );
 
-		$this->assertContains( 'sugarcommerce-tables-reorder-demo', $GLOBALS['rt_nonce_actions'] );
-		$this->assertSame( [ [ 2, 1 ] ], $this->saved );
+		$this->assertTrue( ( $route['permission_callback'] )() );
 
-		$GLOBALS['rt_nonce_ok'] = false;
-		$this->saved            = [];
-
-		try {
-			Reorder::handle( 'demo' );
-		} catch ( \RT_Json $json ) {
-			$this->fail( 'A request with a bad nonce was answered.' );
-		} catch ( \RuntimeException $died ) {
-			$this->assertSame( [], $this->saved );
-		}
+		$GLOBALS['rt_caps'] = [ 'read' ];
+		$this->assertFalse( ( $route['permission_callback'] )() );
 	}
 
 	/**
-	 * Each table saves through its own admin-ajax action.
+	 * The route saves what it is sent, and a request with nothing in order
+	 * is refused.
 	 */
-	public function test_each_table_has_its_own_action(): void {
-		// Hooked once a request; this one is a fresh request.
-		( new \ReflectionProperty( Reorder::class, 'hooked' ) )->setValue( null, [] );
-
+	public function test_the_route_saves_and_refuses_nothing(): void {
 		$this->register();
 
-		$this->assertArrayHasKey( 'wp_ajax_sugarcommerce-tables-reorder-demo', $GLOBALS['rt_actions'] ?? [] );
+		$request = new WP_REST_Request( 'POST', '/' );
+		$request->set_param( 'ids', [ 2, 1 ] );
+
+		$answer = Routes::reorder( 'demo', $request );
+
+		$this->assertInstanceOf( \WP_REST_Response::class, $answer );
+		$this->assertSame( [ 'order' => [ 2, 1 ] ], $answer->get_data() );
+		$this->assertSame( [ [ 2, 1 ] ], $this->saved );
+
+		$request->set_param( 'ids', [ 'x', 0 ] );
+		$refused = Routes::reorder( 'demo', $request );
+
+		$this->assertInstanceOf( \WP_Error::class, $refused );
+		$this->assertSame( 400, $refused->get_error_data()['status'] );
+		$this->assertSame( [ [ 2, 1 ] ], $this->saved );
+	}
+
+	/**
+	 * Each table has its own route.
+	 */
+	public function test_each_table_has_its_own_route(): void {
+		$this->register();
+
+		$this->assertSame( 'sugarcommerce-tables/v1/demo/reorder', Routes::path( 'demo', 'reorder' ) );
+		$this->assertSame( 'sugarcommerce-tables/v1/other/reorder', Routes::path( 'other', 'reorder' ) );
 	}
 
 	/**
@@ -342,8 +359,8 @@ final class ReorderTest extends TestCase {
 
 	/**
 	 * A screen whose table reorders loads the built script -- its own drag,
-	 * not jQuery UI's sortable or touch punch -- and hands it where to post,
-	 * the table's action and nonce, and the two sentences. What the script
+	 * not jQuery UI's sortable or touch punch -- and hands it the table's
+	 * REST route and the two sentences. What the script
 	 * does with them is tests/js/reorder-*.test.js.
 	 */
 	public function test_the_screen_loads_the_built_script(): void {
@@ -361,8 +378,8 @@ final class ReorderTest extends TestCase {
 		[ $name, $data ] = $GLOBALS['rt_localized']['sugarcommerce-tables-reorder'];
 
 		$this->assertSame( 'sugarCommerceReorder', $name );
-		$this->assertSame( 'sugarcommerce-tables-reorder-demo', $data['action'] );
-		$this->assertSame( [ 'url', 'action', 'nonce', 'i18n' ], array_keys( $data ) );
+		$this->assertSame( 'sugarcommerce-tables/v1/demo/reorder', $data['path'] );
+		$this->assertSame( [ 'path', 'i18n' ], array_keys( $data ) );
 		$this->assertSame( [ 'moved', 'failed' ], array_keys( $data['i18n'] ) );
 	}
 }

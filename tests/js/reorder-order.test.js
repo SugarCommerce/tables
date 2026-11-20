@@ -10,12 +10,10 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { createOrder } from '../../assets/js/reorder/order';
 import { initReorder } from '../../assets/js/reorder/init';
-import { fakeFetch, flush, ids, reorderTable } from './support/table';
+import { fakeApiFetch, flush, ids, reorderTable } from './support/table';
 
 const CONFIG = {
-	url: '/wp-admin/admin-ajax.php',
-	action: 'sugarcommerce-tables-reorder-demo',
-	nonce: 'n0nce',
+	path: 'sugarcommerce-tables/v1/demo/reorder',
 	i18n: {
 		moved: '“%1$s” moved to position %2$s of %3$s.',
 		failed: 'The new order could not be saved.',
@@ -23,14 +21,14 @@ const CONFIG = {
 };
 
 let parts;
-let fetch;
+let apiFetch;
 let speak;
 
 beforeEach( () => {
 	parts = reorderTable( 4, { first: 101 } );
-	fetch = fakeFetch();
+	apiFetch = fakeApiFetch();
 	speak = vi.fn();
-	initReorder( parts.list, { config: CONFIG, fetch, speak } );
+	initReorder( parts.list, { config: CONFIG, apiFetch, speak } );
 } );
 
 const key = ( target, name ) =>
@@ -57,7 +55,7 @@ describe( 'the arrow keys on a handle', () => {
 
 		expect( ids( parts.list ) ).toEqual( [ '12', '11', '13', '14' ] );
 		expect( document.activeElement ).toBe( grip );
-		expect( fetch.calls ).toHaveLength( 1 );
+		expect( apiFetch.calls ).toHaveLength( 1 );
 
 		// Up moves the row itself, which takes the focus off it unless it
 		// is put back.
@@ -76,13 +74,13 @@ describe( 'the arrow keys on a handle', () => {
 		handle( 0 ).dispatchEvent( event );
 
 		expect( event.defaultPrevented ).toBe( true );
-		expect( fetch.calls ).toHaveLength( 0 );
+		expect( apiFetch.calls ).toHaveLength( 0 );
 	} );
 
 	test( 'other keys are left alone', () => {
 		key( handle( 0 ), 'Enter' );
 
-		expect( fetch.calls ).toHaveLength( 0 );
+		expect( apiFetch.calls ).toHaveLength( 0 );
 	} );
 } );
 
@@ -93,27 +91,27 @@ describe( 'the step buttons', () => {
 
 		parts.list.children[ 2 ].querySelector( '[data-step="-1"]' ).click();
 		expect( ids( parts.list ) ).toEqual( [ '11', '12', '13', '14' ] );
-		expect( fetch.calls ).toHaveLength( 2 );
+		expect( apiFetch.calls ).toHaveLength( 2 );
 	} );
 
 	test( 'do nothing past the ends', () => {
 		parts.list.children[ 3 ].querySelector( '[data-step="1"]' ).click();
 
 		expect( ids( parts.list ) ).toEqual( [ '11', '12', '13', '14' ] );
-		expect( fetch.calls ).toHaveLength( 0 );
+		expect( apiFetch.calls ).toHaveLength( 0 );
 	} );
 } );
 
 describe( 'a save', () => {
-	test( "posts the table's action, its nonce and every id in order", () => {
+	test( "sends every id in order to the table's route", () => {
 		handle( 2 ).focus();
 		key( handle( 2 ), 'ArrowUp' );
 
-		const body = fetch.calls[ 0 ][ 1 ].body;
-
-		expect( body.get( 'action' ) ).toBe( CONFIG.action );
-		expect( body.get( 'nonce' ) ).toBe( 'n0nce' );
-		expect( body.getAll( 'ids[]' ) ).toEqual( [ '11', '13', '12', '14' ] );
+		expect( apiFetch.calls[ 0 ][ 0 ] ).toEqual( {
+			path: CONFIG.path,
+			method: 'POST',
+			data: { ids: [ 11, 13, 12, 14 ] },
+		} );
 	} );
 
 	test( 'numbers from where the page starts, not from one', () => {
@@ -137,8 +135,8 @@ describe( 'a save', () => {
 
 	test( 'that is refused says so, once, under the heading', async () => {
 		parts = reorderTable( 3 );
-		fetch = fakeFetch( { success: false } );
-		initReorder( parts.list, { config: CONFIG, fetch, speak } );
+		apiFetch = fakeApiFetch( false );
+		initReorder( parts.list, { config: CONFIG, apiFetch, speak } );
 
 		key( handle( 0 ), 'ArrowDown' );
 		await flush();
@@ -161,7 +159,7 @@ describe( 'a save', () => {
 		parts = reorderTable( 3 );
 		initReorder( parts.list, {
 			config: CONFIG,
-			fetch: () => Promise.reject( new Error( 'offline' ) ),
+			apiFetch: () => Promise.reject( new Error( 'offline' ) ),
 			speak,
 		} );
 
@@ -179,12 +177,10 @@ describe( 'a save', () => {
 		parts = reorderTable( 3 );
 		initReorder( parts.list, {
 			config: CONFIG,
-			fetch: () =>
-				new Promise( ( resolve ) =>
+			apiFetch: () =>
+				new Promise( ( resolve, reject ) =>
 					answers.push( ( success ) =>
-						resolve( {
-							json: () => Promise.resolve( { success } ),
-						} )
+						success ? resolve( {} ) : reject( {} )
 					)
 				),
 			speak,
@@ -208,7 +204,7 @@ describe( 'a save', () => {
 		parts = reorderTable( 2 );
 		initReorder( parts.list, {
 			config: { i18n: {} },
-			fetch,
+			apiFetch,
 			speak,
 		} );
 		speak.mockClear();
@@ -224,7 +220,7 @@ test( 'only rows with a handle are rows to move', () => {
 
 	const order = createOrder( parts.list, {
 		config: CONFIG,
-		fetch,
+		apiFetch,
 		speak,
 	} );
 

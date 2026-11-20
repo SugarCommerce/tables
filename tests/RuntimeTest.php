@@ -12,7 +12,7 @@ namespace SugarCommerce\Tables\Tests;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 use ReflectionProperty;
-use SugarCommerce\Tables\Editing\Reorder;
+use SugarCommerce\Tables\Editing\Routes;
 use SugarCommerce\Tables\Seen\Bars;
 use SugarCommerce\Tables\Seen\Rows;
 use SugarCommerce\Tables\Tables;
@@ -56,17 +56,17 @@ final class RuntimeTest extends TestCase {
 		$this->assertSame( 'sugarcommerce_tables_quick_edit', Runtime::key( 'quick_edit' ) );
 
 		$this->assertSame( 'sugarcommerce-tables/v1/shop_orders/toggle', ToggleRoute::path( 'shop_orders' ) );
-		$this->assertSame( 'sugarcommerce-tables-reorder-shop_orders', Reorder::action( 'shop_orders' ) );
+		$this->assertSame( 'sugarcommerce-tables/v1/shop_orders/reorder', Routes::path( 'shop_orders', 'reorder' ) );
 		$this->assertSame( 'sugarcommerce-tables-highlights', Bars::handle() );
 		$this->assertSame( 'sugarcommerce-tables-seen', Rows::cache_group() );
 	}
 
 	/**
-	 * Quick Edit posts to an action named for this copy, and the script is
-	 * told which: one shared action would be answered by whichever bundled
-	 * copy hooked it first, against its own tables.
+	 * Quick Edit saves through a REST route under this copy's namespace, and
+	 * the script is told which: one shared route would be answered by
+	 * whichever bundled copy registered it first, against its own tables.
 	 */
-	public function test_quick_edit_posts_to_this_copys_action(): void {
+	public function test_quick_edit_saves_through_this_copys_route(): void {
 		rt_reset_globals();
 
 		foreach ( [ 'initialized', 'assets_enqueued' ] as $flag ) {
@@ -75,17 +75,18 @@ final class RuntimeTest extends TestCase {
 
 		Tables::init();
 
-		$this->assertArrayHasKey( 'wp_ajax_sugarcommerce_tables_quick_edit', $GLOBALS['rt_actions'] ?? [] );
+		$this->assertSame( [], preg_grep( '/^wp_ajax_/', array_keys( $GLOBALS['rt_actions'] ?? [] ) ) );
 
-		( new ReflectionMethod( Tables::class, 'do_enqueue_assets' ) )->invoke( null, [ 'quick_edit' => [ 'status' => [ 'label' => 'Status' ] ] ] );
+		( new ReflectionMethod( Tables::class, 'do_enqueue_assets' ) )->invoke( null, [ 'quick_edit' => [ 'status' => [ 'label' => 'Status' ] ] ], 'orders' );
 
-		$this->assertSame( 'sugarcommerce_tables_quick_edit', $GLOBALS['rt_localized']['sugarcommerce-tables-inline-edit'][1]['action'] ?? null );
+		$this->assertSame( 'sugarcommerce-tables/v1/orders/quick-edit', $GLOBALS['rt_localized']['sugarcommerce-tables-inline-edit'][1]['path'] ?? null );
 
-		// The script posts it as `action` (tests/js/inline-edit.test.js),
+		// The script sends it through api-fetch (tests/js/inline-edit.test.js),
 		// from the build, with nothing of jQuery.
 		[ $src, $deps ] = $GLOBALS['rt_scripts']['sugarcommerce-tables-inline-edit'] ?? [ '', [] ];
 
 		$this->assertStringEndsWith( '/assets/build/inline-edit.js', (string) $src );
+		$this->assertContains( 'wp-api-fetch', $deps );
 		$this->assertSame( [], preg_grep( '/^jquery/', $deps ) );
 	}
 

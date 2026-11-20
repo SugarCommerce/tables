@@ -447,9 +447,10 @@ Tables::register( 'my_collections', [
 The controls are drawn only while the list shows that order: not sorted by
 another column (or by this one going down), not searched, and not narrowed
 by a status or filter unless `filtered` says so. The number is the row's
-place, first is 1. The save goes through admin-ajax with the table's own
-nonce and the table's edit capability (or `capability`); `save` gets the
-ids as integers and may return an array, which is handed back.
+place, first is 1. The save goes through the table's REST route
+(`Editing\Routes::path( $table, 'reorder' )`) with the table's edit
+capability (or `capability`); `save` gets the ids as integers and may return
+an array, which is handed back.
 
 ## A person
 
@@ -874,7 +875,7 @@ failed.
 Plain JavaScript in ES modules (`assets/js`), each with one job, built by
 `@wordpress/scripts` into `assets/build` -- one file per script a screen
 loads, with an `.asset.php` naming the WordPress scripts it imports
-(`wp-a11y`, `wp-dom-ready`) and a version that changes with its contents.
+(`wp-a11y`, `wp-api-fetch`, `wp-dom-ready`) and a version that changes with its contents.
 `SugarCommerce\Plugin\Assets::enqueue_built_script()` registers an entry from
 that file. No jQuery, jQuery UI or touch punch: none of them is a dependency
 any more.
@@ -894,13 +895,10 @@ sentence. The strings come from PHP, already translated, as they always have.
 What other code may rely on is unchanged:
 
 * the handles (`Runtime::handle( 'reorder' )` and the rest), in the footer;
-* the localized objects `sugarCommerceReorder`, `sugarCommerceInlineEdit` and
-  `sugarCommerceToggles`, and `window.sugarCommerceInlineEditor` -- the quick
-  editor, with `edit()`, `save()`, `revert()` and `setBulk()`;
-* what is posted: the reorder action's `action`, `nonce` and `ids[]`; Quick
-  Edit's fields, `action` and `item_id`, urlencoded with `X-Requested-With`;
-  a toggle's JSON with `X-WP-Nonce`; the `X-SugarCommerce-Table-Notice` header
-  read back;
+* the localized objects `sugarCommerceReorder`, `sugarCommerceInlineEdit`,
+  `sugarCommerceToggles` and `sugarCommerceDeferredColumns`, and
+  `window.sugarCommerceInlineEditor` -- the quick editor, with `edit()`,
+  `save()`, `revert()` and `setBulk()`;
 * the classes: the drag keeps jQuery UI sortable's (`ui-sortable`,
   `ui-sortable-handle`, `ui-sortable-helper`, `ui-sortable-placeholder`), which
   `reorder.css` styles, and the placeholder row is still
@@ -914,10 +912,24 @@ cells and the heading's at their widths, moves along the list and never past
 its ends, scrolls the page near the window's edge, and posts the order only
 when the row lands somewhere new. A cancelled touch puts the row back.
 
-A deferred column used to wait for core's own `hidden-columns` request through
-jQuery's `ajaxComplete`. It now saves the same choice itself -- the same
-action, the screen's nonce and the columns core has marked hidden -- and loads
-the list again when its request answers.
+Everything a script asks the server goes through REST with
+`@wordpress/api-fetch`, which sends core's REST nonce and renews it: under the
+copy's own namespace (`Runtime::rest_namespace()`, named by
+sugarcommerce/plugin's `Build`), one route per table and job, each with its
+own capability check (`Editing\Routes`):
+
+| Route | Sent | Asks |
+|---|---|---|
+| `{table}/reorder` | `ids`, integers in their new order | the reorder capability |
+| `{table}/quick-edit/{id}` | the quick editor's form, urlencoded; answers `row` (its markup) and `notice` | the table's `edit` capability |
+| `{table}/hidden-columns` | `screen` (core's `pagenow`, which must be the table's own) and `hidden` | the table's `view` capability |
+| `{table}/toggle/{id}` | a toggle's JSON | the toggle's capability (`ToggleRoute`) |
+
+Bulk Edit and the row and bulk actions stay plain form posts and links:
+they work without a script, and each checks its own nonce. A deferred column
+used to wait for core's own `hidden-columns` request through jQuery's
+`ajaxComplete`; it now saves the choice through its route, into the user
+option core reads, and loads the list again when that answers.
 
 ```bash
 npm ci
@@ -932,9 +944,12 @@ differs from what was committed.
 
 ## Security
 
-* Forged actions: every row, bulk, Quick Edit, Bulk Edit, reorder and toggle
-  request checks its nonce and a capability (the action's own, or the
+* Forged actions: every row, bulk and Bulk Edit request checks its nonce,
+  and Quick Edit, reorder, toggles and Screen Options go through REST routes
+  with core's REST nonce; each asks a capability (the action's own, or the
   table's) before any callback runs.
+* Another screen's options: the hidden-columns route writes only the table's
+  own screen's option, and only the table's own columns.
 * Acting on what you can only see: an action that names no capability is
   checked against the table's `edit` one, never against nothing.
 * SQL injection: the "new since you looked" counts go through
@@ -960,7 +975,8 @@ differs from what was committed.
   `HiddenColumns`, `ParentMenu`.
 * `src/Cells/` (a person, an item), `src/Seen/` (what is new since you
   looked), `src/Sources/` (BerlinDB rows, country search),
-  `src/Editing/` (Quick and Bulk Edit saves, checklists, reordering),
+  `src/Editing/` (Quick and Bulk Edit saves, checklists, reordering, and
+  `Routes`, the REST routes the scripts call),
   `src/Support/` (the request, the view, a row's fields, column layout and
   formatting, links into panels), `src/Utils/Runtime.php` (hook, handle
   and route names).

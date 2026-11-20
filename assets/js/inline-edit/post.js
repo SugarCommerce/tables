@@ -1,34 +1,31 @@
 /**
- * Posting the quick editor to admin-ajax.
+ * Saving the quick editor through the table's REST route.
  *
- * As jQuery's $.post sent it -- a urlencoded body and the
- * X-Requested-With header -- so the save action reads the same request it
- * always has. The answer is the row's markup, so it is read as text, with
- * the response's headers kept for the notice that travels beside it.
+ * The form goes as it is, urlencoded -- a checklist's ticked boxes as an
+ * array, as a browser posts them -- so the server reads the fields the way
+ * a form sends them. api-fetch sends the REST nonce and renews it. The
+ * answer is the row's markup and what to say about the save.
  */
 
 /**
- * Post a body.
+ * Post the editor's fields.
  *
- * @param {string}   url   admin-ajax.php.
- * @param {string}   body  The urlencoded body.
- * @param {Function} fetch window.fetch, or a fake.
- * @return {Promise<{ok: boolean, text: string, header: Function}>} The answer.
+ * @param {string}   path     The route, under the REST root.
+ * @param {string}   body     The urlencoded fields.
+ * @param {Function} apiFetch api-fetch, or a fake.
+ * @return {Promise<{ok: boolean, row: string, notice: ?Object}>} The answer.
  */
-export function post( url, body, fetch ) {
-	return fetch( url, {
+export function post( path, body, apiFetch ) {
+	return apiFetch( {
+		path,
 		method: 'POST',
-		credentials: 'same-origin',
-		headers: {
-			'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-			'X-Requested-With': 'XMLHttpRequest',
-		},
-		body,
-	} ).then( ( response ) =>
-		response.text().then( ( text ) => ( {
-			ok: response.ok,
-			text,
-			header: ( name ) => response.headers.get( name ),
-		} ) )
+		body: new URLSearchParams( body ),
+	} ).then(
+		( answer ) => ( {
+			ok: true,
+			row: String( ( answer && answer.row ) || '' ),
+			notice: ( answer && answer.notice ) || null,
+		} ),
+		() => ( { ok: false, row: '', notice: null } )
 	);
 }

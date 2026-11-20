@@ -1,6 +1,7 @@
 <?php return array(
 	'dependencies' => array(
+		'wp-api-fetch',
 		'wp-dom-ready'
 	),
-	'version' => '2ac8c980f2b94bf058bd'
+	'version' => '1149a15e93ebcd84dce7'
 );

@@ -13,6 +13,7 @@ declare( strict_types=1 );
 namespace SugarCommerce\Tables;
 
 use SugarCommerce\Plugin\Assets;
+use SugarCommerce\Tables\Editing\Routes;
 use SugarCommerce\Tables\Utils\Runtime;
 
 defined( 'ABSPATH' ) || exit;
@@ -147,12 +148,13 @@ final class HiddenColumns {
 	/**
 	 * The script that reloads the list when such a column is switched on.
 	 *
-	 * @param array $config Table configuration.
+	 * @param array  $config Table configuration.
+	 * @param string $id     Table id, for the route the choice is saved through.
 	 *
 	 * @return void
 	 * @since 1.0.0
 	 */
-	public static function enqueue( array $config ): void {
+	public static function enqueue( array $config, string $id = '' ): void {
 		if ( ! self::any( $config ) ) {
 			return;
 		}
@@ -160,5 +162,11 @@ final class HiddenColumns {
 		// The asset library's class, which a bundled copy prefixes, and not
 		// its global function, which belongs to whichever copy loaded first.
 		Assets::enqueue_built_script( Runtime::handle( 'deferred-columns' ), __FILE__, 'deferred-columns' );
+
+		wp_localize_script(
+			Runtime::handle( 'deferred-columns' ),
+			'sugarCommerceDeferredColumns',
+			[ 'path' => Routes::path( $id, 'hidden-columns' ) ]
+		);
 	}
 }

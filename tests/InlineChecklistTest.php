@@ -131,16 +131,6 @@ final class InlineChecklistTest extends TestCase {
 	private function quick( array $post ): ?array {
 		Tables::register( 'demo', $this->config() );
 
-		$_POST    = array_merge(
-			[
-				'table_id'     => 'demo',
-				'item_id'      => '9',
-				'_inline_edit' => 'valid',
-			],
-			$post
-		);
-		$_REQUEST = $_POST;
-
 		$seen = null;
 
 		add_action(
@@ -150,12 +140,7 @@ final class InlineChecklistTest extends TestCase {
 			}
 		);
 
-		try {
-			InlineEditSave::handle_quick_edit();
-		} catch ( RuntimeException $e ) {
-			// wp_die(), which ends every quick edit.
-			unset( $e );
-		}
+		InlineEditSave::quick_edit( 'demo', 9, $post );
 
 		return $seen;
 	}

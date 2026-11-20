@@ -11,8 +11,10 @@ namespace SugarCommerce\Tables\Tests;
 
 use SugarCommerce\Tables\InlineEdit;
 use SugarCommerce\Tables\Editing\InlineEditSave;
+use SugarCommerce\Tables\Editing\Routes;
 use SugarCommerce\Tables\Tables;
 use PHPUnit\Framework\TestCase;
+use WP_REST_Request;
 use RuntimeException;
 
 /**
@@ -315,7 +317,7 @@ final class InlineEditTest extends TestCase {
 	}
 
 	/**
-	 * Register a table and post a quick edit at it.
+	 * Register a table and send a quick edit to its route.
 	 *
 	 * @param array<string, mixed> $post   What the row submits.
 	 * @param array<string, mixed> $config Table configuration.
@@ -325,23 +327,17 @@ final class InlineEditTest extends TestCase {
 	private function quick_submit( array $post, array $config = [] ): void {
 		Tables::register( 'demo', $config ?: $this->quick_config() );
 
-		$_POST = $_REQUEST = array_merge(
-			[
-				'table_id'     => 'demo',
-				'item_id'      => '9',
-				'_inline_edit' => 'valid',
-			],
-			$post
-		);
-
-		try {
-			InlineEditSave::handle_quick_edit();
-		} catch ( RuntimeException $e ) {
-			// wp_die(), which is where every refused request and every
-			// finished one ends. What matters is whether the action fired
-			// before it, which the caller asserts.
+		// Through the REST route as a request reaches it: its permission
+		// check first, then the save.
+		if ( ! Routes::may_quick_edit( 'demo' ) ) {
 			return;
 		}
+
+		$request = new WP_REST_Request( 'POST', '/' );
+		$request->set_param( 'id', 9 );
+		$request->set_body_params( $post );
+
+		Routes::quick_edit( 'demo', $request );
 	}
 
 	/**
@@ -387,13 +383,39 @@ final class InlineEditTest extends TestCase {
 	}
 
 	/**
-	 * A bad nonce stops it.
+	 * Quick Edit is a REST route of the table's own: no admin-ajax action
+	 * is left to answer it, and the route asks the edit capability.
 	 */
-	public function test_a_quick_edit_needs_its_nonce(): void {
-		$GLOBALS['rt_nonce_ok'] = false;
+	public function test_a_quick_edit_is_a_rest_route(): void {
+		Tables::register( 'demo', $this->quick_config() );
+		Routes::register_routes();
 
-		$this->quick_submit( [ 'status' => 'draft' ] );
+		$route = $GLOBALS['rt_routes']['sugarcommerce-tables/v1/demo/quick-edit/(?P<id>\d+)'] ?? null;
 
+		$this->assertNotNull( $route );
+		$this->assertSame( 'POST', $route['methods'] );
+		$this->assertSame( 'integer', $route['args']['id']['type'] );
+		$this->assertSame( 1, $route['args']['id']['minimum'] );
+		$this->assertArrayNotHasKey( 'wp_ajax_sugarcommerce_tables_quick_edit', $GLOBALS['rt_actions'] ?? [] );
+
+		$GLOBALS['rt_caps'] = [ 'read' ];
+		$this->assertFalse( ( $route['permission_callback'] )() );
+	}
+
+	/**
+	 * A row that is not one is refused, and nothing fires.
+	 */
+	public function test_a_quick_edit_of_no_row_is_refused(): void {
+		Tables::register( 'demo', $this->quick_config() );
+
+		$request = new WP_REST_Request( 'POST', '/' );
+		$request->set_param( 'id', 0 );
+		$request->set_body_params( [ 'status' => 'draft' ] );
+
+		$answer = Routes::quick_edit( 'demo', $request );
+
+		$this->assertInstanceOf( \WP_Error::class, $answer );
+		$this->assertSame( 400, $answer->get_error_data()['status'] );
 		$this->assertNotContains( 'sugarcommerce_table_quick_edit_demo', (array) ( $GLOBALS['rt_fired'] ?? [] ) );
 	}
 
@@ -520,7 +542,7 @@ final class InlineEditTest extends TestCase {
 	}
 
 	/**
-	 * The quick row carries what the ajax endpoint needs to find the table.
+	 * The quick row carries its table and row; the REST nonce replaces its own.
 	 *
 	 * Without the hidden table_id the endpoint cannot tell which table is
 	 * saving, and refuses every request -- from a row that looks fine.
@@ -537,7 +559,7 @@ final class InlineEditTest extends TestCase {
 		$this->assertStringContainsString( 'id="inline-edit"', $html );
 		$this->assertStringContainsString( 'name="table_id" value="demo"', $html );
 		$this->assertStringContainsString( 'name="item_id"', $html );
-		$this->assertStringContainsString( 'name="_inline_edit"', $html );
+		$this->assertStringNotContainsString( 'name="_inline_edit"', $html );
 		$this->assertStringContainsString( 'class="button button-primary save"', $html );
 
 		// Both rows render, from a config that declared only quick_edit.

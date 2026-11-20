@@ -2,9 +2,9 @@
  * A deferred column switched on in Screen Options.
  *
  * Its cells are marks until the list is loaded again, and the list must
- * only load again once the choice is saved. The script saves it itself, as
- * core does, and reloads when that answers -- core's own request can only
- * be heard finishing through jQuery.
+ * only load again once the choice is saved. The script saves it itself,
+ * through the table's REST route with api-fetch, and reloads when that
+ * answers -- core's own request can only be heard finishing through jQuery.
  */
 
 import { beforeEach, expect, test, vi } from 'vitest';
@@ -15,7 +15,7 @@ import {
 } from '../../assets/js/columns/deferred';
 import { flush } from './support/table';
 
-let fetch;
+let apiFetch;
 let reload;
 
 /**
@@ -59,7 +59,7 @@ let stop = () => {};
 beforeEach( () => {
 	page();
 	answer = null;
-	fetch = vi.fn(
+	apiFetch = vi.fn(
 		() =>
 			new Promise( ( resolve, reject ) => {
 				answer = { resolve, reject };
@@ -70,9 +70,9 @@ beforeEach( () => {
 	// A page loaded afresh: one watcher, waiting for nothing.
 	stop();
 	stop = watchDeferredColumns( document, {
-		url: '/wp-admin/admin-ajax.php',
+		path: 'sugarcommerce-tables/v1/demo/hidden-columns',
 		screen: 'playground_page_playground-tables',
-		fetch,
+		apiFetch,
 		reload,
 	} );
 } );
@@ -80,18 +80,14 @@ beforeEach( () => {
 test( "switching one on saves core's choice, then loads the list again", async () => {
 	toggle( 'last_note' );
 
-	expect( fetch ).toHaveBeenCalledTimes( 1 );
-
-	const [ url, options ] = fetch.mock.calls[ 0 ];
-
-	expect( url ).toBe( '/wp-admin/admin-ajax.php' );
-	expect( options.method ).toBe( 'POST' );
-	expect( options.credentials ).toBe( 'same-origin' );
-	expect( Object.fromEntries( options.body ) ).toEqual( {
-		action: 'hidden-columns',
-		hidden: 'country',
-		screenoptionnonce: 'so-nonce',
-		page: 'playground_page_playground-tables',
+	expect( apiFetch ).toHaveBeenCalledTimes( 1 );
+	expect( apiFetch.mock.calls[ 0 ][ 0 ] ).toEqual( {
+		path: 'sugarcommerce-tables/v1/demo/hidden-columns',
+		method: 'POST',
+		data: {
+			screen: 'playground_page_playground-tables',
+			hidden: [ 'country' ],
+		},
 	} );
 
 	// Not before the choice is saved.
@@ -116,7 +112,7 @@ test( 'one save, however often the box is pressed while it is on its way', () =>
 	toggle( 'last_note' );
 	toggle( 'last_note' );
 
-	expect( fetch ).toHaveBeenCalledTimes( 1 );
+	expect( apiFetch ).toHaveBeenCalledTimes( 1 );
 } );
 
 test( 'switching a deferred column off is left to core', () => {
@@ -127,14 +123,14 @@ test( 'switching a deferred column off is left to core', () => {
 	box.click();
 
 	expect( box.checked ).toBe( false );
-	expect( fetch ).not.toHaveBeenCalled();
+	expect( apiFetch ).not.toHaveBeenCalled();
 } );
 
 test( 'a column drawn in full, or one switched off, is left to core', () => {
 	toggle( 'country' );
 	toggle( 'status' );
 
-	expect( fetch ).not.toHaveBeenCalled();
+	expect( apiFetch ).not.toHaveBeenCalled();
 } );
 
 test( "the hidden columns are core's: headings with an id, marked hidden", () => {
@@ -145,5 +141,9 @@ test( "the hidden columns are core's: headings with an id, marked hidden", () =>
 			'<th class="manage-column hidden">No id</th><td id="cb" class="manage-column hidden"></td>'
 		);
 
-	expect( hiddenColumns( document ) ).toBe( 'last_note,country,cb' );
+	expect( hiddenColumns( document ) ).toEqual( [
+		'last_note',
+		'country',
+		'cb',
+	] );
 } );

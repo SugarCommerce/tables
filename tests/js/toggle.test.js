@@ -61,26 +61,28 @@ let speak;
 let storage;
 
 /**
- * A fetch answering each request with the next of some answers.
+ * An api-fetch answering each request with the next of some answers, as
+ * api-fetch does: the body for a success, the error body (or its own
+ * invalid_json error) thrown for a failure.
  *
  * @param {...Object} answers { status, body } each.
- * @return {Function} The fetch, with `.calls`.
+ * @return {Function} The fake, with `.calls` of [ url, options ].
  */
 function answering( ...answers ) {
 	const calls = [];
-	const fake = ( url, options ) => {
-		calls.push( [ url, options ] );
+	const fake = ( options ) => {
+		calls.push( [ options.url, options ] );
 
 		const { status = 200, body = {} } = answers.shift() || {};
 
-		return Promise.resolve( {
-			ok: status < 400,
-			status,
-			json: () =>
-				'string' === typeof body
-					? Promise.reject( new Error( 'not json' ) )
-					: Promise.resolve( body ),
-		} );
+		if ( 'string' === typeof body ) {
+			return Promise.reject( {
+				code: 'invalid_json',
+				message: 'The response is not a valid JSON response.',
+			} );
+		}
+
+		return status < 400 ? Promise.resolve( body ) : Promise.reject( body );
 	};
 
 	fake.calls = calls;
@@ -115,7 +117,7 @@ let failingStorage = false;
 // One document for the whole file, listened to once; each test swaps what
 // the listener reaches through these.
 bindToggles( document, {
-	settings: { nonce: 'rest-nonce', columns: COLUMNS },
+	settings: { columns: COLUMNS },
 	storage: () =>
 		failingStorage
 			? {
@@ -130,7 +132,7 @@ bindToggles( document, {
 					getItem: ( k ) => storage.get( k ) ?? null,
 					setItem: ( k, v ) => storage.set( k, v ),
 				},
-	fetch: ( ...args ) => fetch( ...args ),
+	apiFetch: ( ...args ) => fetch( ...args ),
 	speak: ( ...args ) => speak( ...args ),
 } );
 
@@ -143,7 +145,7 @@ beforeEach( () => {
 } );
 
 describe( 'a press', () => {
-	test( 'turns it over at once, then saves with the REST nonce', async () => {
+	test( 'turns it over at once, then saves through api-fetch', async () => {
 		const button = cell( 'demo:featured', 'a/b' );
 
 		button.click();
@@ -155,12 +157,7 @@ describe( 'a press', () => {
 
 		expect( url ).toBe( '/wp-json/shop/v1/products/a%2Fb' );
 		expect( options.method ).toBe( 'PATCH' );
-		expect( options.credentials ).toBe( 'same-origin' );
-		expect( options.headers ).toEqual( {
-			'Content-Type': 'application/json',
-			'X-WP-Nonce': 'rest-nonce',
-		} );
-		expect( JSON.parse( options.body ) ).toEqual( {
+		expect( options.data ).toEqual( {
 			context: 'list',
 			featured: true,
 		} );

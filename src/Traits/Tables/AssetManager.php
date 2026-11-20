@@ -14,6 +14,7 @@ namespace SugarCommerce\Tables\Traits\Tables;
 
 use SugarCommerce\Plugin\Assets;
 use SugarCommerce\Tables\Support\ColumnLayout;
+use SugarCommerce\Tables\Editing\Routes;
 use SugarCommerce\Tables\HiddenColumns;
 use SugarCommerce\Tables\Support\Request;
 use SugarCommerce\Tables\SearchFilter;
@@ -50,9 +51,9 @@ trait AssetManager {
         }
 
         // Find matching table config
-        foreach ( self::$tables as $config ) {
+        foreach ( self::$tables as $id => $config ) {
             if ( ( $config['menu_slug'] ?? '' ) === $page ) {
-                self::do_enqueue_assets( $config );
+                self::do_enqueue_assets( $config, (string) $id );
                 break;
             }
         }
@@ -64,13 +65,14 @@ trait AssetManager {
      * Enqueues the main stylesheet and outputs dynamic inline styles
      * for column widths and alignments.
      *
-     * @param array $config Table configuration.
+     * @param array  $config Table configuration.
+     * @param string $id     Table id.
      *
      * @return void
      * @since 1.0.0
      *
      */
-    private static function do_enqueue_assets( array $config ): void {
+    private static function do_enqueue_assets( array $config, string $id = '' ): void {
         if ( self::$assets_enqueued ) {
             return;
         }
@@ -107,8 +109,8 @@ trait AssetManager {
                     Runtime::handle( 'inline-edit' ),
                     'sugarCommerceInlineEdit',
                     [
-						'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
-						'action'         => Runtime::key( 'quick_edit' ),
+						// The REST route Quick Edit saves through, with api-fetch.
+						'path'           => Routes::path( $id, 'quick-edit' ),
 						'error'          => __( 'The change could not be saved.', 'sugarcommerce' ),
 						'saved'          => __( 'Changes saved.', 'sugarcommerce' ),
 						'removeFromBulk' => __( 'Remove from Bulk Edit', 'sugarcommerce' ),
@@ -125,7 +127,7 @@ trait AssetManager {
         }
 
         // A deferred column's reload, when the table has one.
-        HiddenColumns::enqueue( $config );
+        HiddenColumns::enqueue( $config, $id );
 
         // Output dynamic styles for this table's configuration
         self::output_dynamic_styles( $config );

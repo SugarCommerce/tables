@@ -13,6 +13,7 @@ declare( strict_types=1 );
 namespace SugarCommerce\Tables\Traits\Tables;
 
 use SugarCommerce\Tables\Editing\Reorder;
+use SugarCommerce\Tables\Editing\Routes;
 use SugarCommerce\Tables\SearchFilter;
 use SugarCommerce\Tables\Seen\Highlights;
 use SugarCommerce\Tables\Seen\Seen;
@@ -221,6 +222,10 @@ trait Registration {
         // makes and not only on the page that drew it.
         ToggleRoute::boot( $id, $config );
         Reorder::boot( $id, $config );
+
+        // The REST routes the list's scripts call: reorder, Quick Edit and
+        // a deferred column's Screen Options save.
+        Routes::boot( $id );
     }
 
     /**

@@ -10,11 +10,10 @@
  *
  * WordPress saves the choice in a request of its own, made with jQuery,
  * and the only way to hear that one finish is jQuery's ajaxComplete. So
- * this saves the same choice itself, the same way core does -- the
- * `hidden-columns` action with the screen's nonce and the columns that are
- * now hidden -- and loads the list again when its own request answers.
- * Both requests save the same list, so it does not matter which lands
- * last.
+ * this saves the same choice itself, through the table's REST route, into
+ * the user option core reads -- and loads the list again when its own
+ * request answers. Both requests save the same list, so it does not matter
+ * which lands last.
  *
  * Nothing happens for a column that was drawn in full, which is most of
  * them.
@@ -24,13 +23,12 @@
  * The columns core counts as hidden now: its own `columns.hidden()`.
  *
  * @param {Document} doc The document.
- * @return {string} Their ids, comma-separated.
+ * @return {string[]} Their ids.
  */
 export function hiddenColumns( doc ) {
 	return Array.from( doc.querySelectorAll( '.manage-column[id]' ) )
 		.filter( ( heading ) => heading.classList.contains( 'hidden' ) )
-		.map( ( heading ) => heading.id )
-		.join( ',' );
+		.map( ( heading ) => heading.id );
 }
 
 /**
@@ -57,15 +55,18 @@ export function isDeferred( doc, column ) {
  * handler, bound on the box itself, has shown the column and marked the
  * heading by then, so the hidden list read here is the one core saves.
  *
- * @param {Document} doc            The document.
- * @param {Object}   options        Options.
- * @param {string}   options.url    admin-ajax.php.
- * @param {string}   options.screen Core's pagenow.
- * @param {Function} options.fetch  window.fetch, or a fake.
- * @param {Function} options.reload Loads the page again.
+ * @param {Document} doc              The document.
+ * @param {Object}   options          Options.
+ * @param {string}   options.path     The table's hidden-columns route.
+ * @param {string}   options.screen   Core's pagenow.
+ * @param {Function} options.apiFetch api-fetch, or a fake.
+ * @param {Function} options.reload   Loads the page again.
  * @return {Function} Stops listening.
  */
-export function watchDeferredColumns( doc, { url, screen, fetch, reload } ) {
+export function watchDeferredColumns(
+	doc,
+	{ path, screen, apiFetch, reload }
+) {
 	let waiting = false;
 
 	const listener = ( event ) => {
@@ -84,18 +85,10 @@ export function watchDeferredColumns( doc, { url, screen, fetch, reload } ) {
 
 		waiting = true;
 
-		const nonce = doc.getElementById( 'screenoptionnonce' );
-		const body = new URLSearchParams( {
-			action: 'hidden-columns',
-			hidden: hiddenColumns( doc ),
-			screenoptionnonce: nonce ? nonce.value : '',
-			page: screen,
-		} );
-
-		fetch( url, {
+		apiFetch( {
+			path,
 			method: 'POST',
-			credentials: 'same-origin',
-			body,
+			data: { screen, hidden: hiddenColumns( doc ) },
 		} )
 			.catch( () => {} )
 			.then( () => reload() );

@@ -36,7 +36,6 @@ use SugarCommerce\Tables\Traits\Tables\Registration;
 use SugarCommerce\Tables\Traits\Tables\ScreenSetup;
 use SugarCommerce\Tables\Traits\Tables\Urls;
 use SugarCommerce\Tables\Utils\Runtime;
-use SugarCommerce\Tables\Editing\InlineEditSave;
 use SugarCommerce\Tables\Support\Request;
 
 // Exit if accessed directly
@@ -224,11 +223,6 @@ final class Tables {
 
         // Enqueue CSS/JS assets
         add_action( 'admin_enqueue_scripts', [ __CLASS__, 'enqueue_assets' ] );
-
-        // Quick Edit saves over ajax, which is a separate request that never
-        // touches the admin page or its screen hooks -- so the endpoint is
-        // registered here rather than anywhere near the table it saves.
-        add_action( 'wp_ajax_' . Runtime::key( 'quick_edit' ), [ InlineEditSave::class, 'handle_quick_edit' ] );
 
         // Add body classes for table pages
         // Which action a notice is for rides in the address, and core tidies

@@ -211,25 +211,25 @@ export const pointer = ( type, y, extra = {} ) =>
 	} );
 
 /**
- * A fetch that answers every request with the same JSON, and keeps them.
+ * An api-fetch that answers every request the same way, and keeps them.
  *
- * @param {*} answer What to answer.
- * @return {Function} The fetch; its `.calls` are [ url, options ] pairs.
+ * @param {boolean} ok Whether the route accepts: false is a refusal, which
+ *                     api-fetch throws.
+ * @return {Function} The fake; its `.calls` are [ options ].
  */
-export function fakeFetch( answer = { success: true } ) {
+export function fakeApiFetch( ok = true ) {
 	const calls = [];
-	const fetch = ( url, options ) => {
-		calls.push( [ url, options ] );
+	const apiFetch = ( options ) => {
+		calls.push( [ options ] );
 
-		return Promise.resolve( {
-			ok: true,
-			json: () => Promise.resolve( answer ),
-		} );
+		return ok
+			? Promise.resolve( { order: options.data.ids } )
+			: Promise.reject( { code: 'reorder_failed', message: 'No.' } );
 	};
 
-	fetch.calls = calls;
+	apiFetch.calls = calls;
 
-	return fetch;
+	return apiFetch;
 }
 
 /**

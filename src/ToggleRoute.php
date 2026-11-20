@@ -263,8 +263,9 @@ final class ToggleRoute {
 		wp_localize_script(
 			Runtime::handle( 'toggle' ),
 			'sugarCommerceToggles',
+			// No nonce: the script saves through api-fetch, which sends core's
+			// REST nonce and renews it.
 			[
-				'nonce'   => wp_create_nonce( 'wp_rest' ),
 				'columns' => Toggle::script_data( (string) $table, $config ),
 			]
 		);

@@ -387,7 +387,6 @@ final class InlineEdit {
 								<input type="hidden" name="table_id" value="<?php echo esc_attr( $table_id ); ?>" />
 								<?php submit_button( __( 'Update', 'sugarcommerce' ), 'primary', 'bulk_edit', false ); ?>
 							<?php else : ?>
-								<?php wp_nonce_field( 'inline-edit-' . $table_id, '_inline_edit', false ); ?>
 								<input type="hidden" name="table_id" value="<?php echo esc_attr( $table_id ); ?>" />
 								<input type="hidden" name="item_id" value="0" />
 								<button type="button" class="button button-primary save"><?php esc_html_e( 'Update', 'sugarcommerce' ); ?></button>

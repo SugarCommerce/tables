@@ -8,9 +8,10 @@
  */
 
 import { speak } from '@wordpress/a11y';
+import apiFetch from '@wordpress/api-fetch';
 import domReady from '@wordpress/dom-ready';
 
-import { ajaxUrl, inlineEditConfig } from './lib/config';
+import { inlineEditConfig } from './lib/config';
 import { bindEditor } from './inline-edit/bind';
 import { createEditor } from './inline-edit/editor';
 import { post } from './inline-edit/post';
@@ -20,8 +21,7 @@ import { post } from './inline-edit/post';
 // waits for the page.
 const editor = createEditor( document, {
 	settings: inlineEditConfig(),
-	ajaxUrl: ajaxUrl(),
-	post: ( url, body ) => post( url, body, window.fetch.bind( window ) ),
+	post: ( path, body ) => post( path, body, apiFetch ),
 	speak,
 } );
 

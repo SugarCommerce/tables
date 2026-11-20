@@ -25,7 +25,7 @@ import { all, fadeIn, hide, isShown, one, show, siblings } from '../lib/dom';
 import { serialize } from '../lib/form';
 import { bulkChecklists, fillChecklists } from './checklists';
 import { fillFields, readField } from './fields';
-import { NOTICE_HEADER, readNotice, showNotice } from './notice';
+import { readNotice, showNotice } from './notice';
 
 /**
  * How many columns the list shows: what an editor row must span.
@@ -47,13 +47,12 @@ const shownColumns = ( doc ) => {
  * @param {Document} doc              The document.
  * @param {Object}   options          Options.
  * @param {Object}   options.settings sugarCommerceInlineEdit.
- * @param {string}   options.ajaxUrl  Core's ajaxurl, when settings has none.
- * @param {Function} options.post     Posts a body: ( url, body ) =>
- *                                    Promise<{ ok, text, header( name ) }>.
+ * @param {Function} options.post     Posts the fields: ( path, body ) =>
+ *                                    Promise<{ ok, row, notice }>.
  * @param {Function} options.speak    wp.a11y.speak, or a fake.
  * @return {Object} The editor.
  */
-export function createEditor( doc, { settings, ajaxUrl, post, speak } ) {
+export function createEditor( doc, { settings, post, speak } ) {
 	const checklists = bulkChecklists( doc, settings );
 	const spinners = () => all( 'table.widefat .spinner', doc );
 	const failure = () => settings.error || 'The change could not be saved.';
@@ -191,12 +190,7 @@ export function createEditor( doc, { settings, ajaxUrl, post, speak } ) {
 				spinner.classList.add( 'is-active' )
 			);
 
-			const body =
-				( row ? serialize( row ) : '' ) +
-				'&action=' +
-				encodeURIComponent( settings.action || '' ) +
-				'&item_id=' +
-				encodeURIComponent( id );
+			const body = row ? serialize( row ) : '';
 
 			const done = ( answer ) => {
 				spinners().forEach( ( spinner ) =>
@@ -209,7 +203,7 @@ export function createEditor( doc, { settings, ajaxUrl, post, speak } ) {
 				}
 
 				// A save that returns nothing did not save.
-				if ( ! answer.text || '-1' === answer.text.trim() ) {
+				if ( ! answer.row || ! answer.row.trim() ) {
 					showError( row );
 					return;
 				}
@@ -227,7 +221,7 @@ export function createEditor( doc, { settings, ajaxUrl, post, speak } ) {
 					old.remove();
 				}
 
-				row.insertAdjacentHTML( 'beforebegin', answer.text );
+				row.insertAdjacentHTML( 'beforebegin', answer.row );
 				row.remove();
 
 				const item = doc.getElementById( 'item-' + id );
@@ -248,7 +242,7 @@ export function createEditor( doc, { settings, ajaxUrl, post, speak } ) {
 						button.focus();
 					}
 
-					const notice = readNotice( answer.header( NOTICE_HEADER ) );
+					const notice = readNotice( answer.notice );
 
 					if ( notice ) {
 						showNotice( doc, notice );
@@ -262,9 +256,10 @@ export function createEditor( doc, { settings, ajaxUrl, post, speak } ) {
 				} );
 			};
 
-			return post( settings.ajaxUrl || ajaxUrl, body ).then( done, () =>
-				done( { ok: false } )
-			);
+			return post(
+				( settings.path || '' ) + '/' + encodeURIComponent( id ),
+				body
+			).then( done, () => done( { ok: false } ) );
 		},
 
 		/**

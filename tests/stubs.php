@@ -987,3 +987,70 @@ if ( ! function_exists( 'remove_submenu_page' ) ) {
 		return false;
 	}
 }
+
+/*
+ * Core's REST classes, as far as the routes here use them.
+ */
+if ( ! class_exists( 'WP_REST_Request' ) ) {
+	class WP_REST_Request {
+		private array $params = [];
+		private array $body   = [];
+
+		public function __construct( $method = '', $route = '' ) {
+		}
+
+		public function set_param( $key, $value ) {
+			$this->params[ $key ] = $value;
+		}
+
+		public function get_param( $key ) {
+			return $this->params[ $key ] ?? $this->body[ $key ] ?? null;
+		}
+
+		public function set_body_params( array $params ) {
+			$this->body = $params;
+		}
+
+		public function get_body_params() {
+			return $this->body;
+		}
+
+		public function get_json_params() {
+			return null;
+		}
+	}
+}
+
+if ( ! class_exists( 'WP_Error' ) ) {
+	class WP_Error {
+		public function __construct( public $code = '', public $message = '', public $data = null ) {
+		}
+
+		public function get_error_code() {
+			return $this->code;
+		}
+
+		public function get_error_message() {
+			return $this->message;
+		}
+
+		public function get_error_data() {
+			return $this->data;
+		}
+	}
+}
+
+if ( ! class_exists( 'WP_REST_Response' ) ) {
+	class WP_REST_Response {
+		public function __construct( public $data = null, public $status = 200 ) {
+		}
+
+		public function get_data() {
+			return $this->data;
+		}
+
+		public function get_status() {
+			return $this->status;
+		}
+	}
+}

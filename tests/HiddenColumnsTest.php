@@ -9,11 +9,13 @@ declare( strict_types=1 );
 
 namespace SugarCommerce\Tables\Tests;
 
+use SugarCommerce\Tables\Editing\Routes;
 use SugarCommerce\Tables\HiddenColumns;
 use SugarCommerce\Tables\Tables;
 use SugarCommerce\Tables\Table;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
+use WP_REST_Request;
 
 /**
  * A deferred column that is hidden is not worked out.
@@ -173,5 +175,56 @@ final class HiddenColumnsTest extends TestCase {
 		$GLOBALS['rt_screen'] = null;
 
 		$this->assertSame( [ 'last_order' ], $table->get_hidden_columns() );
+	}
+
+	/**
+	 * A deferred column's Screen Options choice is saved through the
+	 * table's REST route: the view capability asked, the table's own screen
+	 * only, and only the table's own columns kept.
+	 */
+	public function test_the_choice_is_saved_through_the_tables_route(): void {
+		Tables::register(
+			'shop_customers',
+			[
+				'menu_slug'    => 'shop-customers',
+				'capabilities' => [ 'view' => 'list_customers' ],
+				'columns'      => [
+					'name'       => 'Name',
+					'last_order' => [ 'label' => 'Last Order', 'deferred' => true ],
+				],
+			]
+		);
+
+		Routes::register_routes();
+
+		$route = $GLOBALS['rt_routes']['sugarcommerce-tables/v1/shop_customers/hidden-columns'] ?? null;
+
+		$this->assertNotNull( $route );
+		$this->assertSame( 'array', $route['args']['hidden']['type'] );
+		$this->assertSame( 'string', $route['args']['screen']['type'] );
+
+		$GLOBALS['rt_caps'] = [ 'read' ];
+		$this->assertFalse( ( $route['permission_callback'] )() );
+
+		$GLOBALS['rt_caps'] = [ 'list_customers' ];
+		$this->assertTrue( ( $route['permission_callback'] )() );
+
+		$request = new WP_REST_Request( 'POST', '/' );
+		$request->set_param( 'screen', 'shop_page_shop-customers' );
+		$request->set_param( 'hidden', [ 'last_order', 'not_a_column' ] );
+
+		$answer = Routes::hidden_columns( 'shop_customers', $request );
+
+		$this->assertSame( [ 'hidden' => [ 'last_order' ] ], $answer->get_data() );
+		$this->assertSame( [ 'last_order' ], $GLOBALS['rt_meta_by_user'][1]['manageshop_page_shop-customerscolumnshidden'] ?? null );
+
+		// Another screen's option is not this route's to write.
+		$request->set_param( 'screen', 'edit-post' );
+
+		$refused = Routes::hidden_columns( 'shop_customers', $request );
+
+		$this->assertInstanceOf( \WP_Error::class, $refused );
+		$this->assertSame( 400, $refused->get_error_data()['status'] );
+		$this->assertArrayNotHasKey( 'manageedit-postcolumnshidden', $GLOBALS['rt_meta_by_user'][1] ?? [] );
 	}
 }

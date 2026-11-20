@@ -85,7 +85,7 @@ final class ScriptsTest extends TestCase {
 		[ $src, $deps, $ver, $args ] = $GLOBALS['rt_scripts']['sugarcommerce-tables-deferred-columns'] ?? [ '', [], '', [] ];
 
 		$this->assertStringEndsWith( '/assets/build/deferred-columns.js', (string) $src );
-		$this->assertSame( [ 'wp-dom-ready' ], $deps );
+		$this->assertSame( [ 'wp-api-fetch', 'wp-dom-ready' ], $deps );
 		$this->assertSame( Assets::built_manifest( self::FILE, 'deferred-columns' )['version'], $ver );
 		$this->assertTrue( $args['in_footer'] ?? $args );
 	}

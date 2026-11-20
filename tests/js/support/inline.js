@@ -142,15 +142,15 @@ line two</textarea></label>
 }
 
 /**
- * A post that answers with a row, a notice header, or a failure.
+ * A post that answers with a row and a notice, or a failure.
  *
- * @param {Object} answer { ok, text, notice } -- notice is the header's value.
+ * @param {Object} answer { ok, text, notice } -- text is the row's markup.
  * @return {Function} The post, with `.calls`.
  */
 export function fakePost( answer ) {
 	const calls = [];
-	const post = ( url, body ) => {
-		calls.push( [ url, body ] );
+	const post = ( path, body ) => {
+		calls.push( [ path, body ] );
 
 		if ( answer instanceof Error ) {
 			return Promise.reject( answer );
@@ -158,11 +158,8 @@ export function fakePost( answer ) {
 
 		return Promise.resolve( {
 			ok: answer.ok ?? true,
-			text: answer.text ?? '',
-			header: ( name ) =>
-				'X-SugarCommerce-Table-Notice' === name
-					? ( answer.notice ?? null )
-					: null,
+			row: answer.text ?? '',
+			notice: answer.notice ?? null,
 		} );
 	};
 

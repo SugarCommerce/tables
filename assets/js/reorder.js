@@ -5,10 +5,11 @@
  * chose, so moving a row is done here. There are three ways to do it and
  * one function behind all of them: drag the handle, press the arrow keys
  * while it has focus, or -- on a screen too narrow to drag a row along --
- * tap the up and down buttons. Each ends by posting the ids as they now sit.
+ * tap the up and down buttons. Each ends by sending the ids as they now sit to the table's REST route.
  */
 
 import { speak } from '@wordpress/a11y';
+import apiFetch from '@wordpress/api-fetch';
 import domReady from '@wordpress/dom-ready';
 
 import { reorderConfig } from './lib/config';
@@ -20,7 +21,7 @@ domReady( () => {
 	if ( list ) {
 		initReorder( list, {
 			config: reorderConfig(),
-			fetch: ( ...args ) => window.fetch( ...args ),
+			apiFetch,
 			speak,
 		} );
 	}

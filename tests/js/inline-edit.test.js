@@ -18,12 +18,12 @@ import {
 	readField,
 } from '../../assets/js/inline-edit/fields';
 import { readNotice } from '../../assets/js/inline-edit/notice';
+import { post as send } from '../../assets/js/inline-edit/post';
 import { fakePost, inlinePage, rowMarkup } from './support/inline';
 import { flush } from './support/table';
 
 const SETTINGS = {
-	ajaxUrl: '/wp-admin/admin-ajax.php',
-	action: 'sugarcommerce_tables_quick_edit',
+	path: 'sugarcommerce-tables/v1/orders/quick-edit',
 	error: 'The change could not be saved.',
 	saved: 'Changes saved.',
 	removeFromBulk: 'Remove from Bulk Edit',
@@ -47,7 +47,6 @@ function setUp( answer = { text: '' } ) {
 	speak = vi.fn();
 	editor = createEditor( document, {
 		settings: SETTINGS,
-		ajaxUrl: '/core/admin-ajax.php',
 		post: ( ...args ) => post( ...args ),
 		speak,
 	} );
@@ -223,15 +222,16 @@ describe( 'saving Quick Edit', () => {
 	const saved = ( status ) =>
 		rowMarkup( { id: '12', title: 'PG-1002', status, labels: '2' } );
 
-	test( 'posts every field, the action and the row, as jQuery did', () => {
+	test( "posts every field, as the form sends them, to the row's route", () => {
 		open( '11' );
 		quick( '11' ).querySelector( '.save' ).click();
 
 		expect( post.calls ).toHaveLength( 1 );
-		expect( post.calls[ 0 ][ 0 ] ).toBe( '/wp-admin/admin-ajax.php' );
+		expect( post.calls[ 0 ][ 0 ] ).toBe(
+			'sugarcommerce-tables/v1/orders/quick-edit/11'
+		);
 		expect( post.calls[ 0 ][ 1 ] ).toBe(
-			'labels%5B%5D=&labels%5B%5D=1&labels%5B%5D=2&status=complete&note=line%20one%0D%0Aline%20two&extra=from%20the%20hook&_inline_edit=qnonce&table_id=orders&item_id=11' +
-				'&action=sugarcommerce_tables_quick_edit&item_id=11'
+			'labels%5B%5D=&labels%5B%5D=1&labels%5B%5D=2&status=complete&note=line%20one%0D%0Aline%20two&extra=from%20the%20hook&_inline_edit=qnonce&table_id=orders&item_id=11'
 		);
 		expect(
 			document
@@ -240,30 +240,13 @@ describe( 'saving Quick Edit', () => {
 		).toBe( true );
 	} );
 
-	test( "posts to core's ajaxurl when the settings name none", () => {
-		const settings = { ...SETTINGS, ajaxUrl: '' };
-
-		editor = createEditor( document, {
-			settings,
-			ajaxUrl: '/core/admin-ajax.php',
-			post,
-			speak,
-		} );
-		editor.edit( '13' );
-		editor.save();
-
-		expect( post.calls[ 0 ][ 0 ] ).toBe( '/core/admin-ajax.php' );
-	} );
-
 	test( 'swaps in the row the server drew, and says what it did above the list', async () => {
 		setUp( {
 			text: saved( 'complete' ),
-			notice: encodeURIComponent(
-				JSON.stringify( {
-					message: 'Order PG-1002 is now complete.',
-					type: 'success',
-				} )
-			),
+			notice: {
+				message: 'Order PG-1002 is now complete.',
+				type: 'success',
+			},
 		} );
 
 		const added = vi.fn();
@@ -343,8 +326,7 @@ describe( 'saving Quick Edit', () => {
 
 	test.each( [
 		[ 'nothing', { text: '' } ],
-		[ '-1', { text: ' -1 ' } ],
-		[ 'an error status', { ok: false, text: '-1' } ],
+		[ 'an error status', { ok: false, text: '' } ],
 		[ 'no answer at all', new Error( 'offline' ) ],
 	] )( 'that answers %s says so in the editor', async ( name, answer ) => {
 		setUp( answer );
@@ -629,9 +611,8 @@ describe( 'the pieces', () => {
 		expect( describeValue( '' ) ).toBe( '—' );
 	} );
 
-	test( 'a notice header read, with its type kept to the four', () => {
-		const header = ( value ) =>
-			encodeURIComponent( JSON.stringify( value ) );
+	test( "the answer's notice read, with its type kept to the four", () => {
+		const header = ( value ) => value;
 
 		expect(
 			readNotice( header( { message: 'Done.', type: 'warning' } ) )
@@ -643,7 +624,7 @@ describe( 'the pieces', () => {
 			readNotice( header( { message: 'Done.', type: 'evil x' } ) ).type
 		).toBe( 'success' );
 		expect( readNotice( header( { type: 'success' } ) ) ).toBeNull();
-		expect( readNotice( '%7Bnot json' ) ).toBeNull();
+		expect( readNotice( 'not an object' ) ).toBeNull();
 		expect( readNotice( null ) ).toBeNull();
 	} );
 } );
@@ -665,4 +646,41 @@ test( 'the entry binds the editors and keeps window.sugarCommerceInlineEditor', 
 
 	open( '11' );
 	expect( global.what ).toBe( '11' );
+} );
+
+describe( "the quick editor's request", () => {
+	test( 'goes to the route through api-fetch, the form as it is', async () => {
+		const apiFetch = vi.fn( () =>
+			Promise.resolve( { row: '<tr></tr>', notice: { message: 'Hi.' } } )
+		);
+
+		const answer = await send(
+			'sugarcommerce-tables/v1/orders/quick-edit/11',
+			'status=complete&labels%5B%5D=2',
+			apiFetch
+		);
+
+		const options = apiFetch.mock.calls[ 0 ][ 0 ];
+
+		expect( options.path ).toBe(
+			'sugarcommerce-tables/v1/orders/quick-edit/11'
+		);
+		expect( options.method ).toBe( 'POST' );
+		expect( options.body.toString() ).toBe(
+			'status=complete&labels%5B%5D=2'
+		);
+		expect( answer ).toEqual( {
+			ok: true,
+			row: '<tr></tr>',
+			notice: { message: 'Hi.' },
+		} );
+	} );
+
+	test( 'a refusal is a failed save', async () => {
+		const answer = await send( 'x', '', () =>
+			Promise.reject( { code: 'rest_forbidden' } )
+		);
+
+		expect( answer ).toEqual( { ok: false, row: '', notice: null } );
+	} );
 } );

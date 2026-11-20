@@ -482,8 +482,8 @@ final class ToggleTest extends TestCase {
 
 	/**
 	 * A screen with toggles loads the built script, with nothing of jQuery,
-	 * and hands it the REST nonce and each toggle under the name it has
-	 * always read. What the script does with them is tests/js/toggle.test.js.
+	 * through api-fetch (which sends the REST nonce), and hands it each
+	 * toggle under the name it has always read. What the script does with them is tests/js/toggle.test.js.
 	 */
 	public function test_the_screen_loads_the_built_script(): void {
 		$this->register();
@@ -501,7 +501,8 @@ final class ToggleTest extends TestCase {
 		[ $name, $data ] = $GLOBALS['rt_localized']['sugarcommerce-tables-toggle'];
 
 		$this->assertSame( 'sugarCommerceToggles', $name );
-		$this->assertArrayHasKey( 'nonce', $data );
+		$this->assertContains( 'wp-api-fetch', $deps );
+		$this->assertArrayNotHasKey( 'nonce', $data );
 		$this->assertArrayHasKey( 'demo:consent', $data['columns'] );
 	}
 }

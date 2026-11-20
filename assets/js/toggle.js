@@ -7,6 +7,7 @@
  */
 
 import { speak } from '@wordpress/a11y';
+import apiFetch from '@wordpress/api-fetch';
 import domReady from '@wordpress/dom-ready';
 
 import { toggleConfig } from './lib/config';
@@ -16,7 +17,7 @@ domReady( () => {
 	bindToggles( document, {
 		settings: toggleConfig(),
 		storage: () => window.localStorage,
-		fetch: ( ...args ) => window.fetch( ...args ),
+		apiFetch,
 		speak,
 	} );
 } );

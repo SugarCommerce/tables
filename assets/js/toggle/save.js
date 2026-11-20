@@ -12,15 +12,15 @@ import { day, draw, message } from './draw';
 /**
  * Save the other state, and draw what the server says.
  *
- * @param {Element}  button        The toggle.
- * @param {Object}   config        Its column's settings.
- * @param {Object}   options       Options.
- * @param {string}   options.nonce The REST nonce.
- * @param {Function} options.fetch window.fetch, or a fake.
- * @param {Function} options.speak wp.a11y.speak, or a fake.
+ * @param {Element}  button           The toggle.
+ * @param {Object}   config           Its column's settings.
+ * @param {Object}   options          Options.
+ * @param {Function} options.apiFetch api-fetch, or a fake: it
+ *                                    sends the REST nonce and renews it.
+ * @param {Function} options.speak    wp.a11y.speak, or a fake.
  * @return {Promise<void>} Settles when it is drawn either way.
  */
-export function save( button, config, { nonce, fetch, speak } ) {
+export function save( button, config, { apiFetch, speak } ) {
 	const request = config.request || {};
 	const was = button.getAttribute( 'aria-pressed' ) === 'true';
 	const wasTitle = button.getAttribute( 'title' );
@@ -35,35 +35,15 @@ export function save( button, config, { nonce, fetch, speak } ) {
 	draw( button, config, on, '' );
 
 	return (
-		fetch(
-			String( request.url ).replace(
+		apiFetch( {
+			url: String( request.url ).replace(
 				'{id}',
 				encodeURIComponent( button.getAttribute( 'data-id' ) )
 			),
-			{
-				method: request.method || 'POST',
-				credentials: 'same-origin',
-				headers: {
-					'Content-Type': 'application/json',
-					'X-WP-Nonce': nonce || '',
-				},
-				body: JSON.stringify( body ),
-			}
-		)
-			.then( ( response ) =>
-				response
-					.json()
-					.catch( () => ( {} ) )
-					.then( ( answer ) => {
-						if ( ! response.ok ) {
-							throw new Error(
-								( answer && answer.message ) || ''
-							);
-						}
-
-						return answer || {};
-					} )
-			)
+			method: request.method || 'POST',
+			data: body,
+		} )
+			.then( ( answer ) => answer || {} )
 			.then( ( answer ) => {
 				const now =
 					request.state && request.state in answer
@@ -95,8 +75,12 @@ export function save( button, config, { nonce, fetch, speak } ) {
 				draw( button, config, was, '' );
 				button.setAttribute( 'title', wasTitle );
 
+				// Not api-fetch's own words for an answer that was not JSON.
 				const why =
-					( config.sayWhy && error && error.message ) ||
+					( config.sayWhy &&
+						error &&
+						'invalid_json' !== error.code &&
+						error.message ) ||
 					config.failed;
 
 				message( button, why, true );

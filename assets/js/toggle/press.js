@@ -51,10 +51,10 @@ export function note( storage, key ) {
  * @param {Object}   options          Options.
  * @param {Object}   options.settings sugarCommerceToggles.
  * @param {Function} options.storage  Returns localStorage (it can throw).
- * @param {Function} options.fetch    window.fetch, or a fake.
+ * @param {Function} options.apiFetch api-fetch, or a fake.
  * @param {Function} options.speak    wp.a11y.speak, or a fake.
  */
-export function bindToggles( doc, { settings, storage, fetch, speak } ) {
+export function bindToggles( doc, { settings, storage, apiFetch, speak } ) {
 	const columns = settings.columns || {};
 	const say = ( words ) => words && speak( words );
 
@@ -120,8 +120,7 @@ export function bindToggles( doc, { settings, storage, fetch, speak } ) {
 
 		button.removeAttribute( 'data-armed' );
 		save( button, config, {
-			nonce: settings.nonce,
-			fetch,
+			apiFetch,
 			speak: say,
 		} );
 	} );

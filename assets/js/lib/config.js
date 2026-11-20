@@ -4,13 +4,14 @@
  * The only module that reads the page's globals. Each object is localized
  * by the class that enqueues its script, under the name it has always had:
  * `sugarCommerceReorder` (Reorder::enqueue()), `sugarCommerceInlineEdit`
- * (Traits\AssetManager), `sugarCommerceToggles` (ToggleRoute::enqueue()).
- * `ajaxurl` and `pagenow` are core's own, printed on every admin screen.
+ * (Traits\AssetManager), `sugarCommerceToggles` (ToggleRoute::enqueue()),
+ * `sugarCommerceDeferredColumns` (HiddenColumns::enqueue()). `pagenow` is
+ * core's own, printed on every admin screen.
  */
 
 /**
- * The reorder script's settings: where to post, the action and nonce, and
- * the two sentences it says.
+ * The reorder script's settings: the REST route it saves through, and the
+ * two sentences it says.
  *
  * @return {Object} sugarCommerceReorder, or a shape with no words in it.
  */
@@ -19,7 +20,7 @@ export function reorderConfig() {
 }
 
 /**
- * Quick and Bulk Edit's settings: where to post, the action, the strings.
+ * Quick and Bulk Edit's settings: Quick Edit's REST route, the strings.
  *
  * @return {Object} sugarCommerceInlineEdit, or an empty object.
  */
@@ -37,12 +38,12 @@ export function toggleConfig() {
 }
 
 /**
- * Core's admin-ajax address.
+ * The deferred columns' settings: the route their choice is saved through.
  *
- * @return {string} The URL, or an empty string off an admin screen.
+ * @return {Object} sugarCommerceDeferredColumns, or an empty object.
  */
-export function ajaxUrl() {
-	return window.ajaxurl || '';
+export function deferredColumnsConfig() {
+	return window.sugarCommerceDeferredColumns || {};
 }
 
 /**

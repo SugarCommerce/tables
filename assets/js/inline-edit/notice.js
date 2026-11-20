@@ -1,32 +1,18 @@
 /**
  * What a quick edit did, as the server worded it.
  *
- * It comes in a header beside the row, because the body is the row:
- * "Order #115 is now complete.", in the notice area above the list where a
- * bulk action's sentence appears, replacing the last one this put there.
+ * It comes beside the row in the route's answer: "Order #115 is now
+ * complete.", in the notice area above the list where a bulk action's
+ * sentence appears, replacing the last one this put there.
  */
-
-export const NOTICE_HEADER = 'X-SugarCommerce-Table-Notice';
 
 /**
- * The notice out of its header.
+ * The notice out of the answer, checked.
  *
- * @param {?string} raw The header: JSON, URL-encoded.
+ * @param {?Object} notice The answer's `notice`.
  * @return {?{message: string, type: string}} The notice, or null.
  */
-export function readNotice( raw ) {
-	if ( ! raw ) {
-		return null;
-	}
-
-	let notice;
-
-	try {
-		notice = JSON.parse( decodeURIComponent( raw ) );
-	} catch {
-		return null;
-	}
-
+export function readNotice( notice ) {
 	if ( ! notice || ! notice.message ) {
 		return null;
 	}

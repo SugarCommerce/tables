@@ -55,13 +55,6 @@ defined( 'ABSPATH' ) || exit;
 final class Reorder {
 
 	/**
-	 * Tables whose save is hooked, by id.
-	 *
-	 * @var array<string, true>
-	 */
-	private static array $hooked = [];
-
-	/**
 	 * Whether the enqueue is hooked.
 	 *
 	 * @var bool
@@ -140,22 +133,8 @@ final class Reorder {
 	}
 
 	/**
-	 * The admin-ajax action a table's order is saved through.
-	 *
-	 * One per table, and named for this copy of the library (see
-	 * Utils\Runtime): each bundled copy knows only its own tables, and one
-	 * shared action would be answered by whichever copy hooked it first.
-	 *
-	 * @param string $table Table id.
-	 *
-	 * @return string
-	 */
-	public static function action( string $table ): string {
-		return Runtime::handle( 'reorder-' . sanitize_key( $table ) );
-	}
-
-	/**
-	 * Hook the save and the script for a table that reorders.
+	 * Hook the script for a table that reorders; its save is a REST route
+	 * (Routes).
 	 *
 	 * @param string $table  Table id.
 	 * @param array  $config Table configuration.
@@ -165,17 +144,6 @@ final class Reorder {
 	public static function boot( string $table, array $config ): void {
 		if ( null === self::config( $config ) ) {
 			return;
-		}
-
-		if ( ! isset( self::$hooked[ $table ] ) ) {
-			self::$hooked[ $table ] = true;
-
-			add_action(
-				'wp_ajax_' . self::action( $table ),
-				static function () use ( $table ): void {
-					self::handle( $table );
-				}
-			);
 		}
 
 		if ( ! self::$booted ) {
@@ -405,27 +373,6 @@ final class Reorder {
 	}
 
 	/**
-	 * The admin-ajax request a move posts.
-	 *
-	 * @param string $table Table id.
-	 *
-	 * @return void
-	 */
-	public static function handle( string $table ): void {
-		check_ajax_referer( self::action( $table ), 'nonce' );
-
-		$ids = isset( $_POST['ids'] ) ? array_map( 'absint', (array) wp_unslash( $_POST['ids'] ) ) : [];
-
-		$answer = self::save( $table, $ids );
-
-		if ( $answer['ok'] ) {
-			wp_send_json_success( $answer['data'] );
-		}
-
-		wp_send_json_error( $answer['data'], $answer['status'] );
-	}
-
-	/**
 	 * The script and stylesheet, on a screen whose table reorders.
 	 *
 	 * The drag is the script's own, on pointer events, so a mouse, a pen and
@@ -450,10 +397,9 @@ final class Reorder {
 			Runtime::handle( 'reorder' ),
 			'sugarCommerceReorder',
 			[
-				'url'    => admin_url( 'admin-ajax.php' ),
-				'action' => self::action( (string) $table ),
-				'nonce'  => wp_create_nonce( self::action( (string) $table ) ),
-				'i18n'   => [
+				// The REST route the order is saved through, with api-fetch.
+				'path' => Routes::path( (string) $table, 'reorder' ),
+				'i18n' => [
 					'moved'  => (string) $reorder['labels']['moved'],
 					'failed' => (string) $reorder['labels']['failed'],
 				],

@@ -3,16 +3,17 @@
  * in Screen Options. See columns/deferred.js.
  */
 
+import apiFetch from '@wordpress/api-fetch';
 import domReady from '@wordpress/dom-ready';
 
-import { ajaxUrl, screenName } from './lib/config';
+import { deferredColumnsConfig, screenName } from './lib/config';
 import { watchDeferredColumns } from './columns/deferred';
 
 domReady( () => {
 	watchDeferredColumns( document, {
-		url: ajaxUrl(),
+		path: deferredColumnsConfig().path || '',
 		screen: screenName(),
-		fetch: ( ...args ) => window.fetch( ...args ),
+		apiFetch,
 		reload: () => window.location.reload(),
 	} );
 } );

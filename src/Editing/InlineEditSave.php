@@ -174,28 +174,33 @@ final class InlineEditSave {
 	 * save, and a client rebuilding them from the submitted values would be
 	 * a second renderer drifting from the first.
 	 *
-	 * @return void
+	 * Asked through the REST route (Routes), which has already checked the
+	 * edit capability; the REST nonce is the forgery check.
+	 *
+	 * @param string               $table_id The table.
+	 * @param int                  $item_id  The row.
+	 * @param array<string, mixed> $input    What the quick editor posted, unslashed.
+	 *
+	 * @return array{status: int, row: string, notice: array|null}
 	 * @since 1.0.0
 	 */
-	public static function handle_quick_edit(): void {
-		$table_id = isset( $_POST['table_id'] ) ? sanitize_key( wp_unslash( $_POST['table_id'] ) ) : '';
-
+	public static function quick_edit( string $table_id, int $item_id, array $input ): array {
 		$config = Tables::get_table( $table_id );
 
 		if ( ! $config || ! InlineEdit::has_quick_edit( $config ) ) {
-			wp_die( -1, 400 );
+			return [
+				'status' => 404,
+				'row' => '',
+				'notice' => null,
+			];
 		}
-
-		check_ajax_referer( 'inline-edit-' . $table_id, '_inline_edit' );
-
-		if ( ! current_user_can( self::edit_capability( $config ) ) ) {
-			wp_die( -1, 403 );
-		}
-
-		$item_id = isset( $_POST['item_id'] ) ? absint( wp_unslash( $_POST['item_id'] ) ) : 0;
 
 		if ( $item_id < 1 ) {
-			wp_die( -1, 400 );
+			return [
+				'status' => 400,
+				'row' => '',
+				'notice' => null,
+			];
 		}
 
 		$values = [];
@@ -203,7 +208,7 @@ final class InlineEditSave {
 		foreach ( InlineEdit::fields( $table_id, $config, 'quick_edit' ) as $name => $field ) {
 			// The ids now ticked, which may be none at all.
 			if ( InlineChecklist::is( (array) $field ) ) {
-				$ticked = InlineChecklist::submitted( (array) $field, (string) $name, $_POST );
+				$ticked = InlineChecklist::submitted( (array) $field, (string) $name, $input );
 
 				if ( null !== $ticked ) {
 					$values[ $name ] = $ticked;
@@ -212,11 +217,11 @@ final class InlineEditSave {
 				continue;
 			}
 
-			if ( ! isset( $_POST[ $name ] ) || ! is_scalar( $_POST[ $name ] ) ) {
+			if ( ! isset( $input[ $name ] ) || ! is_scalar( $input[ $name ] ) ) {
 				continue;
 			}
 
-			$submitted = sanitize_text_field( wp_unslash( $_POST[ $name ] ) );
+			$submitted = sanitize_text_field( (string) $input[ $name ] );
 
 			if ( ! self::accepts( $field, $submitted ) ) {
 				continue;
@@ -224,6 +229,10 @@ final class InlineEditSave {
 
 			$values[ $name ] = $submitted;
 		}
+
+		$names = ActionNotice::names_before( $config, [ $item_id ] );
+
+		Outcome::reset();
 
 		/**
 		 * Fires when a row is quick edited.
@@ -233,16 +242,13 @@ final class InlineEditSave {
 		 *
 		 * @since 1.0.0
 		 */
-		$names = ActionNotice::names_before( $config, [ $item_id ] );
-
-		Outcome::reset();
-
 		do_action( "sugarcommerce_table_quick_edit_{$table_id}", $item_id, $values );
 
-		self::send_notice( $config, $item_id, $values, $names );
-		self::render_saved_row( $table_id, $config, $item_id );
-
-		wp_die();
+		return [
+			'status' => 200,
+			'row'    => self::saved_row( $table_id, $config, $item_id ),
+			'notice' => self::notice( $config, $item_id, $values, $names ),
+		];
 	}
 
 	/**
@@ -258,20 +264,18 @@ final class InlineEditSave {
 	/**
 	 * Say what a quick edit did, beside the row it sends back.
 	 *
-	 * A header, because the body is the row and the script swaps it in
-	 * whole. Encoded, because a header is ASCII and a name need not be;
-	 * the script decodes it and shows it as a notice above the table, and
-	 * says it aloud in place of "Changes saved."
+	 * The script shows it as a notice above the table, and says it aloud in
+	 * place of "Changes saved."
 	 *
 	 * @param array              $config  Table configuration.
 	 * @param int                $item_id The row.
 	 * @param array              $values  What was set.
 	 * @param array<int, string> $names   Its name, read before.
 	 *
-	 * @return void
+	 * @return array|null
 	 */
-	private static function send_notice( array $config, int $item_id, array $values, array $names ): void {
-		$notice = ActionNotice::compose(
+	private static function notice( array $config, int $item_id, array $values, array $names ): ?array {
+		return ActionNotice::compose(
 			$config,
 			[
 				'action' => 'quick_edit',
@@ -283,10 +287,6 @@ final class InlineEditSave {
 			],
 			ActionNotice::messages( $config, 'quick_edit' )
 		);
-
-		if ( null !== $notice && ! headers_sent() ) {
-			header( 'X-SugarCommerce-Table-Notice: ' . rawurlencode( (string) wp_json_encode( $notice ) ) );
-		}
 	}
 
 	/**
@@ -301,7 +301,7 @@ final class InlineEditSave {
 	 *
 	 * @return string
 	 */
-	private static function edit_capability( array $config ): string {
+	public static function edit_capability( array $config ): string {
 		return (string) ( $config['capabilities']['edit'] ?? $config['capability'] ?? 'manage_options' );
 	}
 
@@ -312,19 +312,25 @@ final class InlineEditSave {
 	 * @param array  $config   Table configuration.
 	 * @param int    $item_id  The row.
 	 *
-	 * @return void
+	 * @return string The row's markup, or nothing without a get_item callback.
 	 */
-	private static function render_saved_row( string $table_id, array $config, int $item_id ): void {
+	private static function saved_row( string $table_id, array $config, int $item_id ): string {
 		$get = $config['callbacks']['get_item'] ?? null;
 
 		if ( ! is_callable( $get ) ) {
-			return;
+			return '';
 		}
 
 		$item = $get( $item_id );
 
 		if ( ! $item ) {
-			return;
+			return '';
+		}
+
+		// A REST request loads none of the admin: the list table asks for
+		// its screen and its column headers.
+		if ( ! function_exists( 'convert_to_screen' ) && defined( 'ABSPATH' ) && is_file( ABSPATH . 'wp-admin/includes/admin.php' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/admin.php';
 		}
 
 		// The column headers and nothing else. prepare_items() would also
@@ -333,7 +339,11 @@ final class InlineEditSave {
 		$table = new Table( $table_id, $config );
 
 		$table->prepare_columns();
+
+		ob_start();
 		$table->single_row( $item );
+
+		return (string) ob_get_clean();
 	}
 
 	/**

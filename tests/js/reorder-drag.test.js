@@ -23,7 +23,7 @@ import { initReorder } from '../../assets/js/reorder/init';
 import {
 	ROW,
 	TOP,
-	fakeFetch,
+	fakeApiFetch,
 	flush,
 	ids,
 	pointer,
@@ -31,7 +31,7 @@ import {
 } from './support/table';
 
 let parts;
-let fetch;
+let apiFetch;
 let speak;
 
 /**
@@ -70,16 +70,14 @@ const placeholder = () =>
 
 beforeEach( () => {
 	parts = reorderTable( 5 );
-	fetch = fakeFetch();
+	apiFetch = fakeApiFetch();
 	speak = vi.fn();
 	initReorder( parts.list, {
 		config: {
-			url: '/wp-admin/admin-ajax.php',
-			action: 'sugarcommerce-tables-reorder-demo',
-			nonce: 'n0nce',
+			path: 'sugarcommerce-tables/v1/demo/reorder',
 			i18n: { moved: '“%1$s” moved to position %2$s of %3$s.' },
 		},
-		fetch,
+		apiFetch,
 		speak,
 	} );
 } );
@@ -219,16 +217,13 @@ describe( 'a drag', () => {
 			).map( ( number ) => number.textContent )
 		).toEqual( [ '1', '2', '3', '4', '5' ] );
 
-		expect( fetch.calls ).toHaveLength( 1 );
+		expect( apiFetch.calls ).toHaveLength( 1 );
 
-		const [ url, options ] = fetch.calls[ 0 ];
-
-		expect( url ).toBe( '/wp-admin/admin-ajax.php' );
-		expect( options.method ).toBe( 'POST' );
-		expect( options.credentials ).toBe( 'same-origin' );
-		expect( options.body.toString() ).toBe(
-			'action=sugarcommerce-tables-reorder-demo&nonce=n0nce&ids%5B%5D=11&ids%5B%5D=13&ids%5B%5D=14&ids%5B%5D=12&ids%5B%5D=15'
-		);
+		expect( apiFetch.calls[ 0 ][ 0 ] ).toEqual( {
+			path: 'sugarcommerce-tables/v1/demo/reorder',
+			method: 'POST',
+			data: { ids: [ 11, 13, 14, 12, 15 ] },
+		} );
 		expect( speak ).toHaveBeenCalledWith(
 			'“Row 12” moved to position 4 of 5.',
 			'assertive'
@@ -257,7 +252,7 @@ describe( 'a drag', () => {
 		await flush();
 
 		expect( ids( parts.list ) ).toEqual( [ '11', '12', '13', '14', '15' ] );
-		expect( fetch.calls ).toHaveLength( 0 );
+		expect( apiFetch.calls ).toHaveLength( 0 );
 	} );
 
 	test( 'a press that never moves is not a drag', async () => {
@@ -270,7 +265,7 @@ describe( 'a drag', () => {
 		letGo( TOP + 20 );
 		await flush();
 
-		expect( fetch.calls ).toHaveLength( 0 );
+		expect( apiFetch.calls ).toHaveLength( 0 );
 		expect( parts.list.children[ 0 ].style.position ).toBe( '' );
 	} );
 
@@ -281,7 +276,7 @@ describe( 'a drag', () => {
 
 		expect( ids( parts.list ) ).toEqual( [ '11', '12', '13', '14', '15' ] );
 		expect( placeholder() ).toBeNull();
-		expect( fetch.calls ).toHaveLength( 0 );
+		expect( apiFetch.calls ).toHaveLength( 0 );
 	} );
 
 	test( 'the gap passes a row as soon as the pointer is over it, going down', async () => {
@@ -310,14 +305,14 @@ describe( 'a drag', () => {
 		await flush();
 
 		expect( ids( parts.list ) ).toEqual( [ '11', '12', '13', '14', '15' ] );
-		expect( fetch.calls ).toHaveLength( 0 );
+		expect( apiFetch.calls ).toHaveLength( 0 );
 	} );
 
 	test( 'a placeholder drawn taller than the row does not shorten the move', async () => {
 		// reorder.css gives the gap's cell a height of its own, and the
 		// rows under it sit lower than they did.
 		parts = reorderTable( 5, { placeholder: ROW + 24 } );
-		initReorder( parts.list, { config: { i18n: {} }, fetch, speak } );
+		initReorder( parts.list, { config: { i18n: {} }, apiFetch, speak } );
 
 		// From the middle of the second row, down a little over two rows.
 		pickUp( 1, TOP + ROW * 3 + 25 );
@@ -404,7 +399,7 @@ describe( 'a drag', () => {
 
 test( 'a list of one row is not made draggable', () => {
 	parts = reorderTable( 1 );
-	initReorder( parts.list, { config: { i18n: {} }, fetch, speak } );
+	initReorder( parts.list, { config: { i18n: {} }, apiFetch, speak } );
 
 	expect( parts.list.classList.contains( 'ui-sortable' ) ).toBe( false );
 } );

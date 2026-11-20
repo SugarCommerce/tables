@@ -11,17 +11,17 @@ import { sortable } from './sortable';
 /**
  * Make a list reorderable.
  *
- * @param {Element}  list           The list's tbody.
- * @param {Object}   options        Options.
- * @param {Object}   options.config sugarCommerceReorder.
- * @param {Function} options.fetch  window.fetch, or a fake.
- * @param {Function} options.speak  wp.a11y.speak, or a fake.
+ * @param {Element}  list             The list's tbody.
+ * @param {Object}   options          Options.
+ * @param {Object}   options.config   sugarCommerceReorder.
+ * @param {Function} options.apiFetch api-fetch, or a fake.
+ * @param {Function} options.speak    wp.a11y.speak, or a fake.
  * @return {Object} The list's order (createOrder()).
  */
-export function initReorder( list, { config, fetch, speak: say } ) {
+export function initReorder( list, { config, apiFetch, speak: say } ) {
 	const order = createOrder( list, {
 		config,
-		fetch,
+		apiFetch,
 		speak: ( message, politeness ) => message && say( message, politeness ),
 	} );
 
