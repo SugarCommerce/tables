@@ -467,8 +467,6 @@ The cell lays itself out with inline styles, so it is the same inside a
 panel's table on a screen that never loaded this library's stylesheet. It is
 `SugarCommerce\Tables\Cells\Person::cell( $parts )` for a cell drawn by
 hand, and `sugarcommerce_table_person_cell_{table_id}` filters it in a table.
-A link given the class `sugarcommerce-reveal` at the end of the name's line is
-shown, like a row action, only while the row is pointed at or focused.
 
 ## One thing a row names, with its picture
 

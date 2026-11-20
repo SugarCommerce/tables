@@ -391,30 +391,6 @@ a.column-term:hover {
    A person, and one thing a row names (Cells\Person, Cells\Item)
    ========================================================================== */
 
-/* A link at the end of a person's name -- their other rows, say -- that is
-   one of the row's actions, and shown when they are: while the row is
-   pointed at or the link has the keyboard's focus. Until then it is clipped
-   away and not removed, so it can still be tabbed to. A screen that cannot
-   hover, and a list folded to one column, show it all the time, as core
-   shows the row actions there. */
-.sugarcommerce-reveal {
-    flex: none;
-    font-size: 12px;
-    font-weight: 400;
-}
-
-@media (hover: hover) and (min-width: 783px) {
-
-    .wp-list-table tr:not(:hover) .sugarcommerce-reveal:not(:focus) {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip-path: inset(50%);
-        white-space: nowrap;
-    }
-}
-
 /* One thing a row names, with its picture. The picture is small, and
    starts where a person's does in the same row, so the two sit on one line
    across it. The name is one line, cut short; "+ 2 others" follows it

@@ -182,6 +182,11 @@ final class TableLayoutTest extends TestCase {
 		$this->assertDoesNotMatchRegularExpression( '/th\.sort(able|ed) a[^{]*\{\s*display: flex/', $css );
 		$this->assertStringNotContainsString( 'line-clamp', $css );
 		$this->assertStringNotContainsString( ':not(.column-primary)', $css );
+
+		// Nothing in a row appears, or moves, when it is pointed at but
+		// core's own row actions.
+		$this->assertDoesNotMatchRegularExpression( '/tr:(not\()?:?hover/', $css );
+		$this->assertStringNotContainsString( 'sugarcommerce-reveal', $css );
 		$this->assertMatchesRegularExpression( '/\.sugarcommerce-item-title \{[^}]*text-overflow: ellipsis;[^}]*white-space: nowrap;/', $css );
 		$this->assertMatchesRegularExpression( '/\.sugarcommerce-item-meta \{[^}]*text-overflow: ellipsis;[^}]*white-space: nowrap;/', $css );
 	}
