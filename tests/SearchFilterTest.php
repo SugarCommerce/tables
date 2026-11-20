@@ -130,7 +130,7 @@ final class SearchFilterTest extends TestCase {
 		$bar = $this->bar( $this->table() );
 
 		$this->assertStringContainsString( '<label class="screen-reader-text" for="filter-by-product_id">All Products</label>', $bar );
-		$this->assertStringContainsString( 'class="field-kit__relational sugarcommerce-table-search-filter"', $bar );
+		$this->assertStringContainsString( 'class="field-kit__relational sugarcommerce-table-search-filter" data-field-kit-build="sugarcommerce-fields"', $bar );
 		$this->assertStringContainsString( 'data-search-source="demo_products"', $bar );
 
 		// Kept on a phone, where core hides the filter bar.

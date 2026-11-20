@@ -225,7 +225,7 @@ final class SearchFilter {
 
 		return sprintf(
 			'<label class="screen-reader-text" for="%1$s">%2$s</label>'
-			. '<select name="%3$s" id="%1$s" class="field-kit__relational sugarcommerce-table-search-filter"'
+			. '<select name="%3$s" id="%1$s" class="field-kit__relational sugarcommerce-table-search-filter"' . Runtime::stamp()
 			. ' data-search-endpoint="%4$s" data-search-source="%5$s" data-search-nonce="%6$s" data-min-chars="%7$d"%8$s>'
 			. '<option value="">%2$s</option>%9$s</select>',
 			esc_attr( $id ),
