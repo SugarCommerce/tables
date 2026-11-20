@@ -137,9 +137,10 @@ final class Item {
 	 * @param string $kind     Which tile stands in when there is no image:
 	 *                         `box` or `stack`.
 	 * @param int    $size     Pixels each way. Forty beside the title of a row
-	 *                         that is the thing itself; smaller -- twenty-four --
-	 *                         beside a name in a row that is about something
-	 *                         else, where it is decoration and says nothing.
+	 *                         that is the thing itself; smaller beside a name
+	 *                         in a row that is about something else, where it
+	 *                         is decoration and says nothing -- and shown, in a
+	 *                         list, at a person's avatar's 32px.
 	 * @param array  $args     {
 	 *     Optional.
 	 *

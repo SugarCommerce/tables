@@ -460,11 +460,13 @@ a.column-term:hover {
 }
 
 /* The small picture: a square whatever shape the image is, with the
-   corner the grey tile is drawn with -- a fifth of its side. */
+   corner the grey tile is drawn with -- a fifth of its side. As big as a
+   person's avatar (Cells\Person, 32px), whatever size was asked for, so
+   a product and a customer in the same row have the same picture. */
 .wp-list-table .sugarcommerce-thumb-small {
     flex: none;
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     margin-top: 1px;
     border-radius: 20%;
     object-fit: cover;
@@ -538,42 +540,32 @@ a.column-term:hover {
 
 /* ==========================================================================
    Column Footers
-   A figure for the whole view under a column. See Traits\Footer.
+   A figure for the whole view, in the bottom navigation after the bulk
+   actions. See Traits\Footer.
    ========================================================================== */
 
-/* The second line under the figure, quieter than it. */
-.wp-list-table tfoot .sugarcommerce-table-footer small {
-	display: block;
-	color: var(--at-text-secondary);
-	font-size: 12px;
-}
-
-/* The same figure in the bottom navigation, shown only where its cell is
-   not: the rule for a column switched off is written per column, with the
-   table's other inline styles. Core's own line height, so it sits level
-   with "114 items" across from it. */
+/* Core's own line height, so it sits level with "114 items" across from it. */
 .tablenav .sugarcommerce-table-totals {
 	line-height: 2.15384615;
 	margin: 0;
 }
 
 .tablenav .sugarcommerce-table-total {
-	display: none;
 	margin-right: 16px;
 }
 
-.tablenav .sugarcommerce-table-total-label {
+.tablenav .sugarcommerce-table-total-label,
+.tablenav .sugarcommerce-table-total small {
 	color: var(--at-text-secondary);
 }
 
-/* Core shows only the primary column under 782px, footer cell included.
-   A line of its own under the bulk actions: beside them, the floated
+.tablenav .sugarcommerce-table-total small {
+	font-size: inherit;
+}
+
+/* A line of its own under the bulk actions: beside them, the floated
    select ran the figure round itself and left its last words underneath. */
 @media screen and (max-width: 782px) {
-	.tablenav .sugarcommerce-table-total {
-		display: inline;
-	}
-
 	.tablenav.bottom .sugarcommerce-table-totals {
 		float: none;
 		clear: both;
