@@ -11,7 +11,7 @@ namespace SugarCommerce\Tables\Tests;
 
 use SugarCommerce\Data\Component;
 use SugarCommerce\Tables\Sources\BerlinDB;
-use SugarCommerce\Tables\Sources\CountrySearch;
+use SugarCommerce\Geo\Countries;
 use SugarCommerce\Tables\Tests\Fixtures\FakeQuery;
 use SugarCommerce\Tables\Tests\Fixtures\FakeRelatedQuery;
 use PHPUnit\Framework\TestCase;
@@ -189,31 +189,6 @@ final class BerlinDBSourceTest extends TestCase {
 
 		// The narrowing cannot step outside the scope either.
 		$this->assertSame( 2, $this->callbacks()['get_counts']( [ 'country' => 'DE', 'is_test' => 1 ] )['total'] );
-	}
-
-	/**
-	 * What somebody types, and the countries it names.
-	 */
-	public function test_what_names_a_country(): void {
-		$names = [ 'DE' => 'Germany', 'GB' => 'United Kingdom', 'US' => 'United States', 'FI' => 'Finland', 'GE' => 'Georgia' ];
-
-		$this->assertSame( [ 'DE' ], CountrySearch::codes( 'germany', $names ) );
-		$this->assertSame( [ 'DE' ], CountrySearch::codes( '  Germ ', $names ) );
-		$this->assertSame( [ 'DE' ], CountrySearch::codes( 'de', $names ) );
-		$this->assertSame( [ 'DE' ], CountrySearch::codes( 'DE', $names ) );
-		$this->assertSame( [ 'GB' ], CountrySearch::codes( 'kingdom', $names ) );
-		$this->assertSame( [ 'GB', 'US' ], CountrySearch::codes( 'united', $names ) );
-
-		// Inside a name is not a search for it, and nor are two letters
-		// that are not a code.
-		$this->assertSame( [], CountrySearch::codes( 'land', $names ) );
-		$this->assertSame( [], CountrySearch::codes( 'ge rm', $names ) );
-		$this->assertSame( [], CountrySearch::codes( 'zz', $names ) );
-		$this->assertSame( [], CountrySearch::codes( 'un', $names ) );
-		$this->assertSame( [], CountrySearch::codes( '', $names ) );
-
-		// wp-countries' own list when none is given.
-		$this->assertSame( [ 'DE' ], CountrySearch::codes( 'germany' ) );
 	}
 
 	/**

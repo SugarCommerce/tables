@@ -13,6 +13,7 @@ declare( strict_types=1 );
 namespace SugarCommerce\Tables\Sources;
 
 use SugarCommerce\Data\Component;
+use SugarCommerce\Geo\Countries;
 use SugarCommerce\Tables\Support\Row;
 
 /**
@@ -458,7 +459,7 @@ final class BerlinDB {
 		if ( false !== $countries && null !== $countries && ! isset( $options['search_also']['country__in'] ) ) {
 			$options['search_also']['country__in'] = is_callable( $countries )
 				? $countries
-				: static fn( string $term ): array => CountrySearch::codes( $term );
+				: static fn( string $term ): array => Countries::search_codes( $term );
 		}
 
 		return $options;

@@ -280,7 +280,9 @@ use SugarCommerce\Tables\Sources\BerlinDB;
 * **A country's name finds its rows.** When `country` is one of the
   filters, "germany", "Germ" and "de" all find the `DE` rows as well as
   rows whose words match (`'country_search' => false` to turn it off, or a
-  callable `( string $term ): string[]` for a site's own names).
+  callable `( string $term ): string[]` for a site's own names -- for
+  example `fn( $term ) => Countries::search_codes( $term, $my_names )`,
+  sugarcommerce/geo's reading, which is the default).
   `search_also` widens a search other ways -- `[ 'customer_id__in' => fn(
   $term ) => my_plugin_customer_ids( $term ) ]` -- and `search_limit` caps
   each half (default: every id, so the pager never lies).
