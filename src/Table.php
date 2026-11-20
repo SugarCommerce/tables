@@ -19,16 +19,18 @@ declare( strict_types=1 );
 namespace SugarCommerce\Tables;
 
 use WP_List_Table;
-use SugarCommerce\Tables\Traits\BulkActions;
-use SugarCommerce\Tables\Traits\CellRenderer;
-use SugarCommerce\Tables\Traits\ColumnDefinitions;
-use SugarCommerce\Tables\Traits\ColumnRenderer;
-use SugarCommerce\Tables\Traits\EmptyState;
-use SugarCommerce\Tables\Traits\Filtering;
-use SugarCommerce\Tables\Traits\Footer;
-use SugarCommerce\Tables\Traits\QueryBuilder;
-use SugarCommerce\Tables\Traits\RowActions;
-use SugarCommerce\Tables\Traits\ViewsAndFilters;
+use SugarCommerce\Tables\Traits\Table\BulkActions;
+use SugarCommerce\Tables\Traits\Table\CellRenderer;
+use SugarCommerce\Tables\Traits\Table\ColumnDefinitions;
+use SugarCommerce\Tables\Traits\Table\ColumnRenderer;
+use SugarCommerce\Tables\Traits\Table\EmptyState;
+use SugarCommerce\Tables\Traits\Table\Filtering;
+use SugarCommerce\Tables\Traits\Table\Footer;
+use SugarCommerce\Tables\Traits\Table\QueryBuilder;
+use SugarCommerce\Tables\Traits\Table\RowActions;
+use SugarCommerce\Tables\Traits\Table\ViewsAndFilters;
+use SugarCommerce\Tables\Support\Request;
+use SugarCommerce\Tables\Support\Row;
 
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) {
@@ -230,6 +232,7 @@ class Table extends WP_List_Table {
      * @since 1.0.0
      *
      */
+    #[\Override]
     protected function get_table_classes(): array {
         $classes = parent::get_table_classes();
 
@@ -260,6 +263,7 @@ class Table extends WP_List_Table {
      * @return void
      * @since 1.0.0
      */
+    #[\Override]
     public function single_row( $item ): void {
         $classes = '';
 

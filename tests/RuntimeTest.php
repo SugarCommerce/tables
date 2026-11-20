@@ -12,7 +12,7 @@ namespace SugarCommerce\Tables\Tests;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 use ReflectionProperty;
-use SugarCommerce\Tables\Reorder;
+use SugarCommerce\Tables\Editing\Reorder;
 use SugarCommerce\Tables\Seen\Bars;
 use SugarCommerce\Tables\Seen\Rows;
 use SugarCommerce\Tables\Tables;

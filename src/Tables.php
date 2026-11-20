@@ -26,16 +26,18 @@ declare( strict_types=1 );
 
 namespace SugarCommerce\Tables;
 
-use SugarCommerce\Tables\Traits\ActionProcessing;
-use SugarCommerce\Tables\Traits\AdminNotices;
-use SugarCommerce\Tables\Traits\AssetManager;
-use SugarCommerce\Tables\Traits\BulkProcessing;
-use SugarCommerce\Tables\Traits\MenuBuilder;
-use SugarCommerce\Tables\Traits\PageRenderer;
-use SugarCommerce\Tables\Traits\Registration;
-use SugarCommerce\Tables\Traits\ScreenSetup;
-use SugarCommerce\Tables\Traits\Urls;
+use SugarCommerce\Tables\Traits\Tables\ActionProcessing;
+use SugarCommerce\Tables\Traits\Tables\AdminNotices;
+use SugarCommerce\Tables\Traits\Tables\AssetManager;
+use SugarCommerce\Tables\Traits\Tables\BulkProcessing;
+use SugarCommerce\Tables\Traits\Tables\MenuBuilder;
+use SugarCommerce\Tables\Traits\Tables\PageRenderer;
+use SugarCommerce\Tables\Traits\Tables\Registration;
+use SugarCommerce\Tables\Traits\Tables\ScreenSetup;
+use SugarCommerce\Tables\Traits\Tables\Urls;
 use SugarCommerce\Tables\Utils\Runtime;
+use SugarCommerce\Tables\Editing\InlineEditSave;
+use SugarCommerce\Tables\Support\Request;
 
 // Exit if accessed directly
 

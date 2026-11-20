@@ -48,7 +48,7 @@ final class ListDate {
 	/**
 	 * The two ways a date can be said.
 	 */
-	public const MODES = [ 'relative', 'exact' ];
+	public const array MODES = [ 'relative', 'exact' ];
 
 	/**
 	 * Whether a stored value holds a date.

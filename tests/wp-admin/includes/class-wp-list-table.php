@@ -250,4 +250,91 @@ class WP_List_Table {
 	public function display() {
 		echo '<table class="' . esc_attr( implode( ' ', $this->get_table_classes() ) ) . '"></table>';
 	}
+
+	/**
+	 * Members core declares and `Table` overrides, so `#[\Override]` has a
+	 * parent to find. Core's bodies are not needed: `Table` never calls them.
+	 *
+	 * @return void
+	 */
+	public function prepare_items() {}
+
+	/**
+	 * See prepare_items().
+	 *
+	 * @return void
+	 */
+	public function no_items() {}
+
+	/**
+	 * See prepare_items().
+	 *
+	 * @return array<string, string>
+	 */
+	protected function get_views() {
+		return [];
+	}
+
+	/**
+	 * See prepare_items().
+	 *
+	 * @return array<string, string>
+	 */
+	protected function get_bulk_actions() {
+		return [];
+	}
+
+	/**
+	 * See prepare_items().
+	 *
+	 * @return array<string, mixed>
+	 */
+	protected function get_sortable_columns() {
+		return [];
+	}
+
+	/**
+	 * See prepare_items().
+	 *
+	 * @param string $which Top or bottom.
+	 * @return void
+	 */
+	protected function extra_tablenav( $which ) {}
+
+	/**
+	 * See prepare_items().
+	 *
+	 * @param mixed  $item        The row.
+	 * @param string $column_name The column.
+	 * @return void
+	 */
+	protected function column_default( $item, $column_name ) {}
+
+	/**
+	 * See prepare_items().
+	 *
+	 * @param mixed $item The row.
+	 * @return void
+	 */
+	protected function column_cb( $item ) {}
+
+	/**
+	 * See prepare_items().
+	 *
+	 * @param mixed $item The row.
+	 * @return void
+	 */
+	public function single_row( $item ) {}
+
+	/**
+	 * See prepare_items().
+	 *
+	 * @param mixed  $item        The row.
+	 * @param string $column_name The column.
+	 * @param string $primary     The primary column.
+	 * @return string
+	 */
+	protected function handle_row_actions( $item, $column_name, $primary ) {
+		return '';
+	}
 }

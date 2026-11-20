@@ -12,6 +12,9 @@ declare( strict_types=1 );
 
 namespace SugarCommerce\Tables;
 
+use SugarCommerce\Tables\Support\Columns;
+use SugarCommerce\Tables\Support\Row;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -70,7 +73,7 @@ final class Toggle {
 	 *
 	 * @var array<string, mixed>
 	 */
-	private const DEFAULTS = [
+	private const array DEFAULTS = [
 		'field'        => '',      // The row's property that says on or off; the column key when empty.
 		'style'        => 'line',  // 'line' or 'star'.
 		'icons'        => null,    // [ 'on' => icon, 'off' => icon ], `set:name` or a Dashicons name; by style when null.

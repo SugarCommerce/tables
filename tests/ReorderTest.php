@@ -10,7 +10,7 @@ declare( strict_types=1 );
 namespace SugarCommerce\Tables\Tests;
 
 use SugarCommerce\Tables\Tables;
-use SugarCommerce\Tables\Reorder;
+use SugarCommerce\Tables\Editing\Reorder;
 use SugarCommerce\Tables\Table;
 use PHPUnit\Framework\TestCase;
 

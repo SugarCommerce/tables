@@ -38,7 +38,7 @@ final class Markers {
 	 * Nobody makes that many between two looks at the list, and a list that
 	 * could only grow would be one.
 	 */
-	public const OWN = 50;
+	public const int OWN = 50;
 
 	/**
 	 * The name one of the three things is kept under.

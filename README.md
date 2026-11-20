@@ -881,7 +881,7 @@ any more.
 
 | Entry | Loaded by, on a table's screen | Modules |
 |---|---|---|
-| `reorder` | `Reorder::enqueue()`, when the table has `reorder` | `reorder/init` (puts it together), `reorder/order` (the order, the save, the numbering), `reorder/controls` (arrow keys, up and down buttons), `reorder/sortable` (the drag), `reorder/cells` (the widths held while a row is lifted) |
+| `reorder` | `Editing\Reorder::enqueue()`, when the table has `reorder` | `reorder/init` (puts it together), `reorder/order` (the order, the save, the numbering), `reorder/controls` (arrow keys, up and down buttons), `reorder/sortable` (the drag), `reorder/cells` (the widths held while a row is lifted) |
 | `inline-edit` | `Tables`' assets, when the table has `quick_edit` or `bulk_edit` | `inline-edit/editor` (open, save, close, bulk), `inline-edit/bind`, `inline-edit/fields`, `inline-edit/checklists`, `inline-edit/notice`, `inline-edit/post` |
 | `toggle` | `ToggleRoute::enqueue()`, when a column toggles | `toggle/press` (the click, asking first), `toggle/save`, `toggle/draw` |
 | `deferred-columns` | `HiddenColumns::enqueue()`, when a column is `deferred` | `columns/deferred` |
@@ -930,48 +930,40 @@ npm run lint:js
 The build's files are what ship. CI builds again and fails when the result
 differs from what was committed.
 
-## Moving from arraypress/wp-register-tables
+## Security
 
-Every configuration key, cell type, class and method keeps its name; the
-config a list passes today is read the same way.
+* Forged actions: every row, bulk, Quick Edit, Bulk Edit, reorder and toggle
+  request checks its nonce and a capability (the action's own, or the
+  table's) before any callback runs.
+* Acting on what you can only see: an action that names no capability is
+  checked against the table's `edit` one, never against nothing.
+* SQL injection: the "new since you looked" counts go through
+  `$wpdb->prepare()`, with table and column names as `%i`.
+* Arguments slipped into an address: a search or filter value is encoded
+  before it goes into a list's address, so `a&page=x` cannot set `page`.
+* Redirects elsewhere: every redirect is `wp_safe_redirect()` to the list's
+  own page.
+* Stored markup: cells, notices and filter chips are escaped where they are
+  built; a notice's text is `esc_html()`ed, as core does not.
+* Another user's notice: an action's notice is kept per user, under a
+  random token, for five minutes.
 
-| Old | New |
-|---|---|
-| `ArrayPress\RegisterTables\…` | `SugarCommerce\Tables\…` |
-| `ArrayPress\RegisterTables\Manager` | `SugarCommerce\Tables\Tables` (every method, same name) |
-| `register_admin_table( $id, $config )` | `Tables::register( $id, $config )` |
-| `get_table_renderer( $id )` | `Tables::renderer( $id )` |
-| `register_parent_menu( $slug, $title, $args )` | `ParentMenu::register( $slug, $title, $args )` |
-| hooks `arraypress_table_*_{table_id}` | `sugarcommerce_table_*_{table_id}` |
-| hooks `arraypress_before_render_table_{id}`, `arraypress_after_render_table_{id}`, `arraypress_after_render_table_header_{id}` | `sugarcommerce_before_render_table_{id}`, `sugarcommerce_after_render_table_{id}`, `sugarcommerce_after_render_table_header_{id}` |
-| `arraypress_table_date_mode_{meta_key}` | `sugarcommerce_table_date_mode_{meta_key}` |
-| CSS classes `arraypress-*` (`arraypress-reveal`, `arraypress-item-meta`, `arraypress-person-name`, `arraypress-row-{state}`, `arraypress-toggle*`, `arraypress-table-*`…) | `sugarcommerce-*`, the rest of the name unchanged |
-| icons' class `arraypress-icon` | `sugarcommerce-icon` (sugarcommerce/fields) |
-| REST `arraypress-tables/v1/{table}/toggle/{id}` | `sugarcommerce-tables/v1/…`, or `{prefix}-sugarcommerce-tables/v1/…` in a Strauss build: ask `ToggleRoute::path( $table )` rather than matching a literal |
-| `ToggleRoute::NAMESPACE` | `Utils\Runtime::rest_namespace()` |
-| admin-ajax `arraypress_table_quick_edit` | `Runtime::key( 'quick_edit' )` (`sugarcommerce_tables_quick_edit`), handed to the script |
-| admin-ajax and nonce `arraypress-table-reorder-{table}` | `Reorder::action( $table )` (`sugarcommerce-tables-reorder-{table}`) |
-| handles `list-table-styles`, `list-table-inline-edit`, `list-table-deferred-columns`, `arraypress-table-toggle`, `arraypress-table-reorder`, `arraypress-table-highlights` | `Runtime::handle()`: `sugarcommerce-tables`, `sugarcommerce-tables-inline-edit`, `…-deferred-columns`, `…-toggle`, `…-reorder`, `…-highlights` |
-| `Bars::HANDLE`, `Rows::CACHE` (`arraypress-table-seen`) | `Bars::handle()`, `Rows::cache_group()` (`sugarcommerce-tables-seen`) |
-| JS globals `arrayPressInlineEdit`, `arrayPressInlineEditor`, `arrayPressToggles`, `arrayPressReorder`; header `X-ArrayPress-Table-Notice` | `sugarCommerceInlineEdit`, `sugarCommerceInlineEditor`, `sugarCommerceToggles`, `sugarCommerceReorder`; `X-SugarCommerce-Table-Notice` |
-| `assets/js/*.js`, with `jquery`, `jquery-ui-sortable` and `jquery-touch-punch` | `assets/build/*.js` built from `src/js`, depending on `wp-a11y` and `wp-dom-ready` only; see [The scripts](#the-scripts) |
-| filter `register_tables_default_currency` | `SugarCommerce\Money\Money::set_default_currency()`, once per plugin |
-| wp-register-flyouts `Registry`, wp-inline-sync `Registry` | sugarcommerce/flyouts `Registry`, sugarcommerce/jobs `Sync` |
-| wp-field-kit, wp-status-badge, wp-countries, wp-date-utils, wp-money, wp-format-utils, wp-composer-assets | sugarcommerce/fields, status-badge, geo, dates, money, text, plugin |
-| text domain `arraypress` | `sugarcommerce` |
-| `Table::get_items_per_page()` override (read the user meta by hand) | removed: core's `WP_List_Table::get_items_per_page( Tables::per_page_option( $id ), $default )`, which adds the `{table_id}_per_page` filter |
-| hidden columns read from `manage{screen}columnshidden` by hand | `HiddenColumns::of( $table_id, $config )`, core's `get_hidden_columns()` (adds the `hidden_columns` filter) |
-| notices printed by hand; `ActionNotice::render()` | `wp_admin_notice()` / `wp_get_admin_notice()`, the same markup |
-| `ParentMenu::fix_menus()` unset `[0]` | `remove_submenu_page( $slug, $slug )`: only the entry that links to the parent goes |
-| relative dates | sugarcommerce/dates `Site::relative()` (`ListDate::relative()` calls it) |
-| `fixed` table layout: every column the same width unless given one | laid out by its contents; figures narrow (`compact`), see [Widths](#widths-the-primary-column-and-phones) |
-| primary column: the first column | the first that is not a bare `id`, and its row's status and amount under the title on a phone (`summary`) |
-| hidden row actions kept their height under every title | they take none until shown |
+## Layout
 
-What somebody chose is kept: the user meta keys (`{table_id}_seen`, the date
-preference) and the BerlinDB source's options are unchanged. Status badge
-labels are sentence case now ("On hold"), as sugarcommerce/status-badge
-writes them.
+* `src/Tables.php` and `src/Table.php`: the registry and the list table,
+  each slim; their jobs are traits in `src/Traits/Tables/` (registering,
+  menus, the page, actions, bulk actions, notices, scripts, addresses) and
+  `src/Traits/Table/` (columns, cells, row actions, views and filters,
+  the query, the empty state, footers).
+* Public pieces at the top: `Toggle`, `ToggleRoute`, `InlineEdit`,
+  `Transitions`, `ActionNotice`, `Outcome`, `ListDate`, `SearchFilter`,
+  `HiddenColumns`, `ParentMenu`.
+* `src/Cells/` (a person, an item), `src/Seen/` (what is new since you
+  looked), `src/Sources/` (BerlinDB rows, country search),
+  `src/Editing/` (Quick and Bulk Edit saves, checklists, reordering),
+  `src/Support/` (the request, the view, a row's fields, column layout and
+  formatting, links into panels), `src/Utils/Runtime.php` (hook, handle
+  and route names).
 
 ## Requirements
 

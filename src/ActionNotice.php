@@ -12,6 +12,8 @@ declare( strict_types=1 );
 
 namespace SugarCommerce\Tables;
 
+use SugarCommerce\Tables\Support\Row;
+
 /**
  * What the list says after an action: what happened, to what, in the
  * record's own words.
@@ -59,18 +61,18 @@ final class ActionNotice {
 	/**
 	 * The query argument the token rides in.
 	 */
-	public const ARG = '_notice';
+	public const string ARG = '_notice';
 
 	/**
 	 * How long a sentence waits to be shown, in seconds: a redirect, and
 	 * then some.
 	 */
-	private const TTL = 300;
+	private const int TTL = 300;
 
 	/**
 	 * Up to how many rows are named. Past it, a count.
 	 */
-	private const FEW = 3;
+	private const int FEW = 3;
 
 	/**
 	 * What a row is called.

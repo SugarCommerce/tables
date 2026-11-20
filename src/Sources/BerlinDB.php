@@ -13,7 +13,7 @@ declare( strict_types=1 );
 namespace SugarCommerce\Tables\Sources;
 
 use SugarCommerce\Data\Component;
-use SugarCommerce\Tables\Row;
+use SugarCommerce\Tables\Support\Row;
 
 /**
  * A table's callbacks, for rows that live in a BerlinDB table.
@@ -50,7 +50,7 @@ final class BerlinDB {
 	 * The paging and ordering arguments, which a count and a list of ids
 	 * have no use for.
 	 */
-	private const PAGING = [
+	private const array PAGING = [
 		'number'  => true,
 		'offset'  => true,
 		'orderby' => true,
@@ -61,7 +61,7 @@ final class BerlinDB {
 	 * The most rows a page may ask for: core's own ceiling on the
 	 * per-page box in Screen Options.
 	 */
-	private const MOST = 999;
+	private const int MOST = 999;
 
 	/**
 	 * The callbacks a table needs, from a description of where its rows are.

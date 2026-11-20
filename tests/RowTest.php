@@ -9,7 +9,7 @@ declare( strict_types=1 );
 
 namespace SugarCommerce\Tables\Tests;
 
-use SugarCommerce\Tables\Row;
+use SugarCommerce\Tables\Support\Row;
 use PHPUnit\Framework\TestCase;
 
 /**

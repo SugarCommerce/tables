@@ -28,7 +28,7 @@ final class ScriptsTest extends TestCase {
 	/**
 	 * A file of the package, for the asset helper to find it from.
 	 */
-	private const FILE = __DIR__ . '/../src/Reorder.php';
+	private const FILE = __DIR__ . '/../src/Editing/Reorder.php';
 
 	/**
 	 * A clean slate.

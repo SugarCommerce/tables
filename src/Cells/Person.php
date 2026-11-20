@@ -12,7 +12,7 @@ declare( strict_types=1 );
 
 namespace SugarCommerce\Tables\Cells;
 
-use SugarCommerce\Tables\FlyoutLink;
+use SugarCommerce\Tables\Support\FlyoutLink;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -52,7 +52,7 @@ final class Person {
 	/**
 	 * One line, cut short: what the name and the address both are.
 	 */
-	private const LINE = 'display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden;overflow-wrap:anywhere';
+	private const string LINE = 'display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden;overflow-wrap:anywhere';
 
 	/**
 	 * The cell.

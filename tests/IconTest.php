@@ -10,9 +10,9 @@ declare( strict_types=1 );
 namespace SugarCommerce\Tables\Tests;
 
 use SugarCommerce\Fields\Icons\Icons;
-use SugarCommerce\Tables\Columns;
+use SugarCommerce\Tables\Support\Columns;
 use SugarCommerce\Tables\Tables;
-use SugarCommerce\Tables\Reorder;
+use SugarCommerce\Tables\Editing\Reorder;
 use SugarCommerce\Tables\Table;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;

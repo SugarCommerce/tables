@@ -13,7 +13,7 @@ declare( strict_types=1 );
 namespace SugarCommerce\Tables\Seen;
 
 use SugarCommerce\Plugin\Assets;
-use SugarCommerce\Tables\Request;
+use SugarCommerce\Tables\Support\Request;
 use SugarCommerce\Tables\Utils\Runtime;
 
 defined( 'ABSPATH' ) || exit;

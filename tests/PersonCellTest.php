@@ -10,7 +10,7 @@ declare( strict_types=1 );
 namespace SugarCommerce\Tables\Tests;
 
 use SugarCommerce\Tables\Cells\Person;
-use SugarCommerce\Tables\Columns;
+use SugarCommerce\Tables\Support\Columns;
 use SugarCommerce\Tables\Tables;
 use SugarCommerce\Tables\Table;
 use PHPUnit\Framework\TestCase;

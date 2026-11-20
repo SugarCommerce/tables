@@ -9,7 +9,7 @@ declare( strict_types=1 );
 
 namespace SugarCommerce\Tables\Tests;
 
-use SugarCommerce\Tables\FlyoutLink;
+use SugarCommerce\Tables\Support\FlyoutLink;
 use SugarCommerce\Tables\Tables;
 use SugarCommerce\Tables\Table;
 use PHPUnit\Framework\TestCase;

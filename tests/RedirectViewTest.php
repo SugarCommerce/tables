@@ -10,7 +10,7 @@ declare( strict_types=1 );
 namespace SugarCommerce\Tables\Tests;
 
 use SugarCommerce\Tables\Tables;
-use SugarCommerce\Tables\ViewState;
+use SugarCommerce\Tables\Support\ViewState;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -214,7 +214,7 @@ final class RedirectViewTest extends TestCase {
 	 * a bulk action.
 	 */
 	public function test_the_editors_are_outside_the_form(): void {
-		$source = (string) file_get_contents( dirname( __DIR__ ) . '/src/Traits/PageRenderer.php' );
+		$source = (string) file_get_contents( dirname( __DIR__ ) . '/src/Traits/Tables/PageRenderer.php' );
 
 		$form_ends = strpos( $source, '</form>' );
 		$editors   = strpos( $source, 'InlineEdit::render_inline_rows(' );

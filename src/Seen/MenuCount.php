@@ -12,7 +12,7 @@ declare( strict_types=1 );
 
 namespace SugarCommerce\Tables\Seen;
 
-use SugarCommerce\Tables\Request;
+use SugarCommerce\Tables\Support\Request;
 
 defined( 'ABSPATH' ) || exit;
 

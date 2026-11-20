@@ -27,7 +27,7 @@ final class Config {
 	/**
 	 * How many days a row stays new for, unless the table says.
 	 */
-	public const WINDOW = 7;
+	public const int WINDOW = 7;
 
 	/**
 	 * A table's `seen` and `highlights`, normalised.

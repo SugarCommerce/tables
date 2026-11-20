@@ -45,7 +45,7 @@ final class HiddenColumns {
 	/**
 	 * The class the placeholder carries, and the script looks for.
 	 */
-	public const PLACEHOLDER_CLASS = 'sugarcommerce-column-deferred';
+	public const string PLACEHOLDER_CLASS = 'sugarcommerce-column-deferred';
 
 	/**
 	 * Whether a column of a table is hidden for whoever is looking.

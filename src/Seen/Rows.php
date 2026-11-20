@@ -12,7 +12,7 @@ declare( strict_types=1 );
 
 namespace SugarCommerce\Tables\Seen;
 
-use SugarCommerce\Tables\Row;
+use SugarCommerce\Tables\Support\Row;
 use SugarCommerce\Tables\Utils\Runtime;
 
 defined( 'ABSPATH' ) || exit;
@@ -42,7 +42,7 @@ final class Rows {
 	/**
 	 * How long a count is believed, in seconds.
 	 */
-	public const LIFETIME = 60;
+	public const int LIFETIME = 60;
 
 	/**
 	 * The moment before which nothing is new, by window, once worked out.

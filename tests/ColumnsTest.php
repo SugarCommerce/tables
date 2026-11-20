@@ -9,7 +9,7 @@ declare( strict_types=1 );
 
 namespace SugarCommerce\Tables\Tests;
 
-use SugarCommerce\Tables\Columns;
+use SugarCommerce\Tables\Support\Columns;
 use PHPUnit\Framework\TestCase;
 use SugarCommerce\Money\Money;
 

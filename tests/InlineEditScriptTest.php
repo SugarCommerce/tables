@@ -29,7 +29,7 @@ final class InlineEditScriptTest extends TestCase {
 	 * falls apart.
 	 */
 	public function test_a_row_title_link_sits_inside_its_strong(): void {
-		$source = (string) file_get_contents( dirname( __DIR__ ) . '/src/Traits/ColumnRenderer.php' );
+		$source = (string) file_get_contents( dirname( __DIR__ ) . '/src/Traits/Table/ColumnRenderer.php' );
 
 		$this->assertStringNotContainsString( '"><strong>%s</strong></a>', $source );
 		$this->assertStringNotContainsString( '><strong>$1</strong></a>', $source );

@@ -11,7 +11,7 @@ namespace SugarCommerce\Tables\Tests;
 
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
-use SugarCommerce\Tables\ColumnLayout;
+use SugarCommerce\Tables\Support\ColumnLayout;
 use SugarCommerce\Tables\Table;
 use SugarCommerce\Tables\Tables;
 use SugarCommerce\Tables\Utils\Runtime;

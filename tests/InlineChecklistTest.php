@@ -9,9 +9,9 @@ declare( strict_types=1 );
 
 namespace SugarCommerce\Tables\Tests;
 
-use SugarCommerce\Tables\InlineChecklist;
+use SugarCommerce\Tables\Editing\InlineChecklist;
 use SugarCommerce\Tables\InlineEdit;
-use SugarCommerce\Tables\InlineEditSave;
+use SugarCommerce\Tables\Editing\InlineEditSave;
 use SugarCommerce\Tables\Tables;
 use SugarCommerce\Tables\Table;
 use PHPUnit\Framework\TestCase;

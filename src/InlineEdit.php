@@ -5,9 +5,11 @@
  * @package SugarCommerce\Tables
  */
 
-declare( strict_types = 1 );
+declare( strict_types=1 );
 
 namespace SugarCommerce\Tables;
+
+use SugarCommerce\Tables\Editing\InlineChecklist;
 
 defined( 'ABSPATH' ) || exit;
 

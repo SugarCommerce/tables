@@ -12,6 +12,8 @@ declare( strict_types=1 );
 
 namespace SugarCommerce\Tables;
 
+use SugarCommerce\Tables\Support\Row;
+
 /**
  * Moving a row from one status to another, from its row or from a bulk
  * action, and saying so afterwards in the record's own words.

@@ -71,6 +71,29 @@ final class PageUrlTest extends TestCase {
 	}
 
 	/**
+	 * A view's values are encoded, so one cannot add arguments of its own.
+	 *
+	 * Core's add_query_arg() puts a value in as given. A search for
+	 * `Tom & Jerry` came back from the filter redirect as `Tom `, and a search
+	 * or filter carrying `&page=` or `&action=` set those arguments on the
+	 * address the list was sent to.
+	 */
+	public function test_a_value_cannot_add_arguments_to_the_address(): void {
+		$url = Tables::page_url(
+			[ 'parent_slug' => 'edit.php?post_type=book', 'menu_slug' => 'my-table' ],
+			[ 's' => 'Tom & Jerry&page=other#top', 'status' => 'a+b' ]
+		);
+
+		parse_str( (string) parse_url( $url, PHP_URL_QUERY ), $query );
+
+		$this->assertSame( 'my-table', $query['page'] );
+		$this->assertSame( 'book', $query['post_type'] );
+		$this->assertSame( 'Tom & Jerry&page=other#top', $query['s'] );
+		$this->assertSame( 'a+b', $query['status'] );
+		$this->assertSame( [ 'post_type', 'page', 's', 'status' ], array_keys( $query ) );
+	}
+
+	/**
 	 * Extra arguments are added, and the parent's are kept.
 	 *
 	 * The bulk-action redirect is this case: it carries its result back as
@@ -140,7 +163,7 @@ final class PageUrlTest extends TestCase {
 	 * page_url() and not to the form.
 	 */
 	public function test_the_form_takes_its_hidden_inputs_from_page_args(): void {
-		$source = (string) file_get_contents( dirname( __DIR__ ) . '/src/Traits/PageRenderer.php' );
+		$source = (string) file_get_contents( dirname( __DIR__ ) . '/src/Traits/Tables/PageRenderer.php' );
 
 		$this->assertStringContainsString( 'self::page_args( $config )', $source );
 
@@ -157,7 +180,7 @@ final class PageUrlTest extends TestCase {
 	 * Both would post the same key twice.
 	 */
 	public function test_filters_are_not_duplicated_as_hidden_inputs(): void {
-		$source = (string) file_get_contents( dirname( __DIR__ ) . '/src/Traits/PageRenderer.php' );
+		$source = (string) file_get_contents( dirname( __DIR__ ) . '/src/Traits/Tables/PageRenderer.php' );
 
 		$this->assertStringNotContainsString( '$preserve_params', $source );
 	}
@@ -169,7 +192,7 @@ final class PageUrlTest extends TestCase {
 	 * asserted is that there is one place left that decides this.
 	 */
 	public function test_no_url_is_built_against_admin_php_directly(): void {
-		foreach ( [ 'Tables.php', 'Table.php', 'Traits/Urls.php' ] as $file ) {
+		foreach ( [ 'Tables.php', 'Table.php', 'Traits/Tables/Urls.php' ] as $file ) {
 			$source = (string) file_get_contents( dirname( __DIR__ ) . '/src/' . $file );
 
 			$this->assertSame(

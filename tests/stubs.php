@@ -327,6 +327,12 @@ if ( ! function_exists( 'admin_url' ) ) {
 	}
 }
 
+if ( ! function_exists( 'urlencode_deep' ) ) {
+	function urlencode_deep( $value ) {
+		return is_array( $value ) ? array_map( 'urlencode_deep', $value ) : urlencode( (string) $value );
+	}
+}
+
 if ( ! function_exists( 'add_query_arg' ) ) {
 	function add_query_arg( ...$args ) {
 		if ( is_array( $args[0] ) ) {
@@ -344,9 +350,20 @@ if ( ! function_exists( 'add_query_arg' ) ) {
 			parse_str( $parts[1], $existing );
 		}
 
-		$query = array_merge( $existing, $pairs );
+		// As core: what was already there is encoded again, what is added is
+		// put in exactly as given -- encoding it is the caller's job.
+		$query = array_merge( array_map( static fn( $v ) => is_array( $v ) ? $v : urlencode( (string) $v ), $existing ), $pairs );
+		$pairs = [];
 
-		return '' === $query ? $parts[0] : $parts[0] . '?' . http_build_query( $query );
+		foreach ( $query as $key => $value ) {
+			if ( null === $value || false === $value ) {
+				continue;
+			}
+
+			$pairs[] = is_array( $value ) ? http_build_query( [ $key => $value ] ) : $key . '=' . $value;
+		}
+
+		return [] === $pairs ? $parts[0] : $parts[0] . '?' . implode( '&', $pairs );
 	}
 }
 

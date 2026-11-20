@@ -17,6 +17,7 @@ use WP_REST_Request;
 use WP_REST_Response;
 use WP_Error;
 use SugarCommerce\Tables\Utils\Runtime;
+use SugarCommerce\Tables\Support\Request;
 
 defined( 'ABSPATH' ) || exit;
 

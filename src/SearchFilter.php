@@ -15,6 +15,8 @@ namespace SugarCommerce\Tables;
 use SugarCommerce\Fields\Assets;
 use SugarCommerce\Fields\Rest\SearchController;
 use SugarCommerce\Fields\Utils\Runtime;
+use SugarCommerce\Tables\Support\Request;
+use SugarCommerce\Tables\Support\ViewState;
 
 /**
  * A filter whose choices are too many to list: `'type' => 'search'`.
