@@ -12,8 +12,7 @@ declare( strict_types=1 );
 
 namespace SugarCommerce\Tables\Support;
 
-use SugarCommerce\Flyouts\Registry;
-use SugarCommerce\Jobs\Sync;
+use SugarCommerce\Plugin\Build;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -30,10 +29,12 @@ defined( 'ABSPATH' ) || exit;
  * function was never loaded at all, every Edit link and every linked title
  * drew nothing.
  *
- * A class name, by contrast, is rewritten with the rest of the namespace, so
- * the `Registry` below is always the copy bundled beside this one. It is a
- * soft dependency: without the flyout library there is no panel to open, and
- * the link is not drawn rather than drawn pointing nowhere.
+ * A class name, by contrast, is the copy bundled beside this one -- asked for
+ * through Build::sibling(), because Strauss rewrites only the packages a
+ * plugin bundles, and an import of one it left out would reach SugarCart's
+ * unprefixed copy. It is a soft dependency: without the flyout library there
+ * is no panel to open, and the link is not drawn rather than drawn pointing
+ * nowhere.
  *
  * @since 1.0.0
  */
@@ -52,11 +53,13 @@ final class FlyoutLink {
 	 * @since 1.0.0
 	 */
 	public static function get( string $flyout, int $id, string $text, string $classes = '' ): string {
-		if ( '' === $flyout || '' === $text || ! class_exists( Registry::class ) ) {
+		$registry = self::sibling( 'Flyouts\\Registry' );
+
+		if ( '' === $flyout || '' === $text || null === $registry ) {
 			return '';
 		}
 
-		$resolved = Registry::resolve( $flyout );
+		$resolved = $registry::resolve( $flyout );
 
 		if ( ! is_array( $resolved ) || ! isset( $resolved['manager'], $resolved['flyout_id'] ) ) {
 			return '';
@@ -82,11 +85,13 @@ final class FlyoutLink {
 	 * @since 1.0.0
 	 */
 	public static function button( string $flyout, array $args ): string {
-		if ( '' === $flyout || '' === (string) ( $args['text'] ?? '' ) || ! class_exists( Registry::class ) ) {
+		$registry = self::sibling( 'Flyouts\\Registry' );
+
+		if ( '' === $flyout || '' === (string) ( $args['text'] ?? '' ) || null === $registry ) {
 			return '';
 		}
 
-		$resolved = Registry::resolve( $flyout );
+		$resolved = $registry::resolve( $flyout );
 
 		if ( ! is_array( $resolved ) || ! isset( $resolved['manager'], $resolved['flyout_id'] ) ) {
 			return '';
@@ -109,10 +114,25 @@ final class FlyoutLink {
 	 * @since 1.0.0
 	 */
 	public static function sync_button( string $id ): string {
-		if ( '' === $id || ! class_exists( Sync::class ) ) {
+		$sync = self::sibling( 'Jobs\\Sync' );
+
+		if ( '' === $id || null === $sync ) {
 			return '';
 		}
 
-		return (string) Sync::get( $id )?->button();
+		return (string) $sync::get( $id )?->button();
+	}
+
+	/**
+	 * A class of a package this one suggests, in this build, when it is there.
+	 *
+	 * @param string $relative The class after `SugarCommerce\`.
+	 *
+	 * @return class-string|null
+	 */
+	private static function sibling( string $relative ): ?string {
+		$class = Build::sibling( __NAMESPACE__, 3, $relative );
+
+		return class_exists( $class ) ? $class : null;
 	}
 }
