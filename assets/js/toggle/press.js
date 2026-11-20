@@ -5,9 +5,10 @@
  * agreed to elsewhere: the first time somebody does it, the line says so
  * and waits for a second press; after that it only says so in the tooltip.
  *
- * Delegated from the document rather than bound to each button: Quick Edit
+ * Delegated from the screen rather than bound to each button: Quick Edit
  * replaces a row after it saves, and a handler bound to the old row's
- * button would be gone with it.
+ * button would be gone with it. The screen is the build's own `.wrap`, so
+ * another plugin's copy of the library never presses this one's toggles.
  */
 
 import { message } from './draw';
@@ -45,17 +46,22 @@ export function note( storage, key ) {
 }
 
 /**
- * Listen for presses on every toggle in a document.
+ * Listen for presses on every toggle in a screen.
  *
- * @param {Document} doc              The document.
- * @param {Object}   options          Options.
- * @param {Object}   options.settings sugarCommerceToggles.
- * @param {Function} options.storage  Returns localStorage (it can throw).
- * @param {Function} options.apiFetch api-fetch, or a fake.
- * @param {Function} options.speak    wp.a11y.speak, or a fake.
+ * What somebody has been told once is remembered under the build's name
+ * too: another plugin's toggle of the same name means something else.
+ *
+ * @param {Document|Element} root             The build's screen, or a whole document.
+ * @param {Object}           options          Options.
+ * @param {Object}           options.settings This build's entry of window.SugarCommerceTables.
+ * @param {Function}         options.storage  Returns localStorage (it can throw).
+ * @param {Function}         options.apiFetch api-fetch, or a fake.
+ * @param {Function}         options.speak    wp.a11y.speak, or a fake.
  */
-export function bindToggles( doc, { settings, storage, apiFetch, speak } ) {
+export function bindToggles( root, { settings, storage, apiFetch, speak } ) {
 	const columns = settings.columns || {};
+	const view = ( root.ownerDocument || root ).defaultView;
+	const build = settings.build ? settings.build + ':' : '';
 	const say = ( words ) => words && speak( words );
 
 	const store = () => {
@@ -66,9 +72,9 @@ export function bindToggles( doc, { settings, storage, apiFetch, speak } ) {
 		}
 	};
 
-	doc.addEventListener( 'click', ( event ) => {
+	root.addEventListener( 'click', ( event ) => {
 		const button =
-			event.target instanceof doc.defaultView.Element
+			event.target instanceof view.Element
 				? event.target.closest( 'button.sugarcommerce-toggle' )
 				: null;
 
@@ -94,7 +100,7 @@ export function bindToggles( doc, { settings, storage, apiFetch, speak } ) {
 
 		const turningOn = button.getAttribute( 'aria-pressed' ) !== 'true';
 		const confirm = turningOn ? config.confirmOn : config.confirmOff;
-		const direction = key + ( turningOn ? ':on' : ':off' );
+		const direction = build + key + ( turningOn ? ':on' : ':off' );
 
 		// Once, ever, before the first press that means it: say what it
 		// means, and wait for the press that does.

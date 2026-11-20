@@ -88,6 +88,14 @@ final class ScriptsTest extends TestCase {
 		$this->assertSame( [ 'wp-api-fetch', 'wp-dom-ready' ], $deps );
 		$this->assertSame( Assets::built_manifest( self::FILE, 'deferred-columns' )['version'], $ver );
 		$this->assertTrue( $args['in_footer'] ?? $args );
+
+		// Its route, in this build's entry of the registry.
+		$config = rt_script_config( 'sugarcommerce-tables-deferred-columns' );
+
+		$this->assertSame( [ 'build', 'path' ], array_keys( (array) $config ) );
+		$this->assertSame( 'sugarcommerce-tables', $config['build'] );
+		$this->assertStringStartsWith( 'sugarcommerce-tables/v1/', $config['path'] );
+		$this->assertStringEndsWith( '/hidden-columns', $config['path'] );
 	}
 
 	/**

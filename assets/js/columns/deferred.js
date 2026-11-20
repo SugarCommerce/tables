@@ -22,11 +22,11 @@
 /**
  * The columns core counts as hidden now: its own `columns.hidden()`.
  *
- * @param {Document} doc The document.
+ * @param {Document|Element} root The screen, or the whole document.
  * @return {string[]} Their ids.
  */
-export function hiddenColumns( doc ) {
-	return Array.from( doc.querySelectorAll( '.manage-column[id]' ) )
+export function hiddenColumns( root ) {
+	return Array.from( root.querySelectorAll( '.manage-column[id]' ) )
 		.filter( ( heading ) => heading.classList.contains( 'hidden' ) )
 		.map( ( heading ) => heading.id );
 }
@@ -34,13 +34,13 @@ export function hiddenColumns( doc ) {
 /**
  * Whether a column's cells are only marks waiting to be worked out.
  *
- * @param {Document} doc    The document.
- * @param {string}   column The column's name.
+ * @param {Document|Element} root   The screen, or the whole document.
+ * @param {string}           column The column's name.
  * @return {boolean} Deferred.
  */
-export function isDeferred( doc, column ) {
+export function isDeferred( root, column ) {
 	return (
-		doc.querySelectorAll(
+		root.querySelectorAll(
 			'.wp-list-table td.column-' +
 				column +
 				' .sugarcommerce-column-deferred'
@@ -55,17 +55,22 @@ export function isDeferred( doc, column ) {
  * handler, bound on the box itself, has shown the column and marked the
  * heading by then, so the hidden list read here is the one core saves.
  *
- * @param {Document} doc              The document.
- * @param {Object}   options          Options.
- * @param {string}   options.path     The table's hidden-columns route.
- * @param {string}   options.screen   Core's pagenow.
- * @param {Function} options.apiFetch api-fetch, or a fake.
- * @param {Function} options.reload   Loads the page again.
+ * Screen Options is outside the screen's `.wrap`, so the box is heard on
+ * the document; the columns it looks at are the screen's own, so another
+ * plugin's copy of the library never reloads a list that is not its own.
+ *
+ * @param {Document}         doc              The document.
+ * @param {Object}           options          Options.
+ * @param {Document|Element} options.root     The build's screen; the document when not given.
+ * @param {string}           options.path     The table's hidden-columns route.
+ * @param {string}           options.screen   Core's pagenow.
+ * @param {Function}         options.apiFetch api-fetch, or a fake.
+ * @param {Function}         options.reload   Loads the page again.
  * @return {Function} Stops listening.
  */
 export function watchDeferredColumns(
 	doc,
-	{ path, screen, apiFetch, reload }
+	{ root = doc, path, screen, apiFetch, reload }
 ) {
 	let waiting = false;
 
@@ -79,7 +84,7 @@ export function watchDeferredColumns(
 			return;
 		}
 
-		if ( ! isDeferred( doc, box.value ) ) {
+		if ( ! isDeferred( root, box.value ) ) {
 			return;
 		}
 
@@ -88,7 +93,7 @@ export function watchDeferredColumns(
 		apiFetch( {
 			path,
 			method: 'POST',
-			data: { screen, hidden: hiddenColumns( doc ) },
+			data: { screen, hidden: hiddenColumns( root ) },
 		} )
 			.catch( () => {} )
 			.then( () => reload() );

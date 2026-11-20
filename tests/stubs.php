@@ -58,6 +58,7 @@ function rt_reset_globals(): void {
 		$GLOBALS['rt_nonce_actions'],
 		$GLOBALS['rt_flyouts'],
 		$GLOBALS['rt_localized'],
+		$GLOBALS['rt_inline_scripts'],
 		$GLOBALS['rt_scripts'],
 		$GLOBALS['rt_enqueued_scripts'],
 		$GLOBALS['rt_routes'],
@@ -296,9 +297,31 @@ if ( ! function_exists( 'wp_strip_all_tags' ) ) {
 }
 
 if ( ! function_exists( 'wp_add_inline_script' ) ) {
-	function wp_add_inline_script( ...$args ) {
+	function wp_add_inline_script( $handle, $data, $position = 'after' ) {
+		$GLOBALS['rt_inline_scripts'][ $handle ][] = [ $data, $position ];
+
 		return true;
 	}
+}
+
+/**
+ * The settings a script was handed in its build's entry of
+ * window.SugarCommerceTables, decoded; null when it was handed none.
+ *
+ * @param string $handle The script's handle.
+ *
+ * @return array|null
+ */
+function rt_script_config( string $handle ): ?array {
+	foreach ( $GLOBALS['rt_inline_scripts'][ $handle ] ?? [] as [ $data, $position ] ) {
+		$prefix = 'window.SugarCommerceTables=window.SugarCommerceTables||{};window.SugarCommerceTables[' . json_encode( $handle ) . ']=';
+
+		if ( 'before' === $position && str_starts_with( $data, $prefix ) && str_ends_with( $data, ';' ) ) {
+			return json_decode( substr( $data, strlen( $prefix ), -1 ), true );
+		}
+	}
+
+	return null;
 }
 
 if ( ! function_exists( 'wp_style_is' ) ) {

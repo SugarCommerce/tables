@@ -13,6 +13,7 @@ declare( strict_types=1 );
 namespace SugarCommerce\Tables;
 
 use SugarCommerce\Tables\Support\Row;
+use SugarCommerce\Tables\Utils\Runtime;
 
 /**
  * What the list says after an action: what happened, to what, in the
@@ -411,13 +412,14 @@ final class ActionNotice {
 	}
 
 	/**
-	 * The transient a token names, for the signed-in user only.
+	 * The transient a token names, for the signed-in user only, and named
+	 * for this build by Runtime::key(), so no other plugin's copy reads it.
 	 *
 	 * @param string $token The token.
 	 *
 	 * @return string
 	 */
 	private static function key( string $token ): string {
-		return 'list_table_notice_' . get_current_user_id() . '_' . $token;
+		return Runtime::key( 'notice_' . get_current_user_id() . '_' . $token );
 	}
 }

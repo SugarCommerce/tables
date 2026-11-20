@@ -889,18 +889,19 @@ any more.
 | `toggle` | `ToggleRoute::enqueue()`, when a column toggles | `toggle/press` (the click, asking first), `toggle/save`, `toggle/draw` |
 | `deferred-columns` | `HiddenColumns::enqueue()`, when a column is `deferred` | `columns/deferred` |
 
-`lib/config` is the one reader of what PHP handed over, `lib/dom` the few DOM
+`lib/config` is the one reader of what PHP handed over (below), `lib/dom` the few DOM
 helpers, `lib/form` the quick editor's fields as a request body (what jQuery's
 `serialize()` sent, byte for byte) and `lib/text` the filling of a translated
 sentence. The strings come from PHP, already translated, as they always have.
 
-What other code may rely on is unchanged:
+What other code may rely on:
 
 * the handles (`Runtime::handle( 'reorder' )` and the rest), in the footer;
-* the localized objects `sugarCommerceReorder`, `sugarCommerceInlineEdit`,
-  `sugarCommerceToggles` and `sugarCommerceDeferredColumns`, and
-  `window.sugarCommerceInlineEditor` -- the quick editor, with `edit()`,
-  `save()`, `revert()` and `setBulk()`;
+* each script's settings, in its build's entry of `window.SugarCommerceTables`
+  keyed by its handle (below);
+* the quick editor, with `edit()`, `save()`, `revert()` and `setBulk()`, at
+  `window.SugarCommerceTables[ handle ].editor`, the handle being the
+  `inline-edit` script's;
 * the classes: the drag keeps jQuery UI sortable's (`ui-sortable`,
   `ui-sortable-handle`, `ui-sortable-helper`, `ui-sortable-placeholder`), which
   `reorder.css` styles, and the placeholder row is still
@@ -943,6 +944,43 @@ npm run lint:js
 
 The build's files are what ship. CI builds again and fails when the result
 differs from what was committed.
+
+### Two plugins, one page
+
+Every plugin bundling a Strauss-prefixed copy of this library loads each
+script under its own handles, `{prefix}-sugarcommerce-tables-{entry}`
+(`sugarcommerce-tables-{entry}` unprefixed), and nothing it sets on the page is
+a name another copy would set too:
+
+* PHP files each script's settings under its handle in one registry
+  (`Support\ScriptConfig::attach()`), with the build they belong to:
+  `window.SugarCommerceTables["sugarcommerce-tables-toggle"] = { build:
+  "sugarcommerce-tables", columns: … }`. A script finds its own entry from the
+  id WordPress gives its element, `{handle}-js` (`lib/config`).
+* The screen names its build too, on its `.wrap`:
+  `data-sugarcommerce-tables="sugarcommerce-tables"`. A script listens inside
+  its own build's screen and nowhere else -- another plugin's copy, of
+  whatever version, never presses this one's toggles, opens its editors or
+  reloads its list -- and keeps the flag that it has begun (`bound`) in its
+  own entry.
+* What a toggle remembers having said once is kept under its build's name
+  (`sugarcommerce-toggle-noted:{build}:{table}:{column}:on`), and an action's
+  notice under a transient named by `Runtime::key()`.
+
+A plugin's own script reaches the quick editor through its build:
+
+```js
+const build = document
+	.querySelector( '[data-sugarcommerce-tables]' )
+	.getAttribute( 'data-sugarcommerce-tables' );
+const editor = window.SugarCommerceTables[ build + '-inline-edit' ].editor;
+
+editor.revert();
+```
+
+or, from PHP, with the handle its own copy names:
+`Runtime::handle( 'inline-edit' )` (`Utils\Runtime`, prefixed in a bundled
+copy). The editor is made as the script loads, before the page is ready.
 
 ## Security
 

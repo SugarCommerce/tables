@@ -18,6 +18,7 @@ use WP_REST_Response;
 use WP_Error;
 use SugarCommerce\Tables\Utils\Runtime;
 use SugarCommerce\Tables\Support\Request;
+use SugarCommerce\Tables\Support\ScriptConfig;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -260,9 +261,8 @@ final class ToggleRoute {
 		Assets::enqueue_style( Runtime::handle( 'toggle' ), __FILE__, 'css/toggle.css' );
 		Assets::enqueue_built_script( Runtime::handle( 'toggle' ), __FILE__, 'toggle' );
 
-		wp_localize_script(
+		ScriptConfig::attach(
 			Runtime::handle( 'toggle' ),
-			'sugarCommerceToggles',
 			// No nonce: the script saves through api-fetch, which sends core's
 			// REST nonce and renews it.
 			[

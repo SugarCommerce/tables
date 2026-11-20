@@ -375,11 +375,13 @@ final class ReorderTest extends TestCase {
 		$this->assertContains( 'wp-a11y', $deps );
 		$this->assertSame( [], preg_grep( '/^jquery/', $deps ) );
 
-		[ $name, $data ] = $GLOBALS['rt_localized']['sugarcommerce-tables-reorder'];
+		// In this build's entry of the registry, never a fixed page global.
+		$data = rt_script_config( 'sugarcommerce-tables-reorder' );
 
-		$this->assertSame( 'sugarCommerceReorder', $name );
+		$this->assertArrayNotHasKey( 'sugarcommerce-tables-reorder', $GLOBALS['rt_localized'] ?? [] );
 		$this->assertSame( 'sugarcommerce-tables/v1/demo/reorder', $data['path'] );
-		$this->assertSame( [ 'path', 'i18n' ], array_keys( $data ) );
+		$this->assertSame( [ 'build', 'path', 'i18n' ], array_keys( $data ) );
+		$this->assertSame( 'sugarcommerce-tables', $data['build'] );
 		$this->assertSame( [ 'moved', 'failed' ], array_keys( $data['i18n'] ) );
 	}
 }

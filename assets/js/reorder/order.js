@@ -14,7 +14,7 @@ import { fill } from '../lib/text';
  *
  * @param {Element}  list             The list's tbody (#the-list).
  * @param {Object}   options          Options.
- * @param {Object}   options.config   sugarCommerceReorder.
+ * @param {Object}   options.config   This build's reorder entry of window.SugarCommerceTables.
  * @param {Function} options.apiFetch api-fetch, or a fake.
  * @param {Function} options.speak    wp.a11y.speak, or a fake.
  * @return {Object} rows(), save(), step() and renumber().

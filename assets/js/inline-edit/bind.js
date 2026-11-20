@@ -2,11 +2,12 @@
  * What opens, saves and closes the two editors.
  *
  * The quick editor is a clone of `#inline-edit`, made each time it opens,
- * so everything inside it is listened to from the document: a clone has
- * none of the template's listeners. (jQuery's clone( true ) copied them;
- * delegating from the container instead had left Update and Cancel dead in
- * the open editor once already.) The bulk row is moved rather than cloned,
- * so it keeps its own.
+ * so everything inside it is listened to from the whole screen -- the
+ * build's `.wrap`, which the clone is put inside: a clone has none of the
+ * template's listeners. (jQuery's clone( true ) copied them; delegating from
+ * the template's container instead had left Update and Cancel dead in the
+ * open editor once already.) The bulk row is moved rather than cloned, so it
+ * keeps its own.
  */
 
 import { all, on } from '../lib/dom';
@@ -23,15 +24,20 @@ const QUICK = 'tr.inline-editor:not(#bulk-edit)';
 const isEscape = ( event ) => 'Escape' === event.key || 27 === event.keyCode;
 
 /**
- * Listen for everything the editors answer to.
+ * Listen for everything the editors answer to, inside one screen.
  *
- * @param {Document} doc    The document.
- * @param {Object}   editor createEditor()'s editor.
+ * Every listener is on the screen or inside it -- the build's own `.wrap`,
+ * which holds the list, its bulk controls and both editors -- so another
+ * plugin's copy of the library, on the same page, never answers this one's
+ * buttons.
+ *
+ * @param {Document|Element} root   The screen (its `.wrap`), or a whole document.
+ * @param {Object}           editor createEditor()'s editor.
  * @return {Function} Stops listening.
  */
-export function bindEditor( doc, editor ) {
-	const bulk = doc.getElementById( 'bulk-edit' );
-	const quick = doc.getElementById( 'inline-edit' );
+export function bindEditor( root, editor ) {
+	const bulk = root.querySelector( '#bulk-edit' );
+	const quick = root.querySelector( '#inline-edit' );
 	const stops = [];
 	const listen = ( target, type, handler ) => {
 		target.addEventListener( type, handler );
@@ -46,14 +52,14 @@ export function bindEditor( doc, editor ) {
 	// Both, because core has a set of bulk controls above the table and
 	// another below it, and either can be the one used.
 	[ 'doaction', 'doaction2' ].forEach( ( id ) => {
-		const button = doc.getElementById( id );
+		const button = root.querySelector( '#' + id );
 
 		if ( ! button ) {
 			return;
 		}
 
 		listen( button, 'click', ( event ) => {
-			const select = doc.querySelector(
+			const select = root.querySelector(
 				`select[name="${ id.substr( 2 ) }"]`
 			);
 
@@ -99,7 +105,7 @@ export function bindEditor( doc, editor ) {
 			on( bulk, 'click', '.ntdelbutton', ( event, button ) => {
 				const id = button.id.substr( 1 );
 
-				all( 'table.widefat input', doc )
+				all( 'table.widefat input', root )
 					.filter( ( input ) => input.value === id )
 					.forEach( ( input ) => {
 						input.checked = false;
@@ -107,7 +113,7 @@ export function bindEditor( doc, editor ) {
 
 				button.parentElement.remove();
 
-				if ( ! doc.querySelector( '#bulk-titles-list li' ) ) {
+				if ( ! root.querySelector( '#bulk-titles-list li' ) ) {
 					editor.revert();
 				}
 			} )
@@ -120,7 +126,7 @@ export function bindEditor( doc, editor ) {
 
 	// The row is replaced after every save, and a listener on the old row
 	// would stop firing; #the-list is never moved.
-	const list = doc.getElementById( 'the-list' );
+	const list = root.querySelector( '#the-list' );
 
 	if ( list ) {
 		stops.push(
@@ -134,9 +140,9 @@ export function bindEditor( doc, editor ) {
 	}
 
 	stops.push(
-		on( doc, 'click', `${ QUICK } .save`, () => editor.save() ),
-		on( doc, 'click', `${ QUICK } .cancel`, () => editor.revert() ),
-		on( doc, 'keydown', `${ QUICK } td`, ( event ) => {
+		on( root, 'click', `${ QUICK } .save`, () => editor.save() ),
+		on( root, 'click', `${ QUICK } .cancel`, () => editor.revert() ),
+		on( root, 'keydown', `${ QUICK } td`, ( event ) => {
 			if (
 				'Enter' === event.key &&
 				! event.target.classList.contains( 'cancel' )
@@ -145,7 +151,7 @@ export function bindEditor( doc, editor ) {
 				editor.save();
 			}
 		} ),
-		on( doc, 'keyup', QUICK, ( event ) => {
+		on( root, 'keyup', QUICK, ( event ) => {
 			if ( isEscape( event ) ) {
 				editor.revert();
 			}

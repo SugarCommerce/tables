@@ -79,7 +79,7 @@ final class RuntimeTest extends TestCase {
 
 		( new ReflectionMethod( Tables::class, 'do_enqueue_assets' ) )->invoke( null, [ 'quick_edit' => [ 'status' => [ 'label' => 'Status' ] ] ], 'orders' );
 
-		$this->assertSame( 'sugarcommerce-tables/v1/orders/quick-edit', $GLOBALS['rt_localized']['sugarcommerce-tables-inline-edit'][1]['path'] ?? null );
+		$this->assertSame( 'sugarcommerce-tables/v1/orders/quick-edit', rt_script_config( 'sugarcommerce-tables-inline-edit' )['path'] ?? null );
 
 		// The script sends it through api-fetch (tests/js/inline-edit.test.js),
 		// from the build, with nothing of jQuery.

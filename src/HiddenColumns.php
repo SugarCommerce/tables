@@ -15,6 +15,7 @@ namespace SugarCommerce\Tables;
 use SugarCommerce\Plugin\Assets;
 use SugarCommerce\Tables\Editing\Routes;
 use SugarCommerce\Tables\Utils\Runtime;
+use SugarCommerce\Tables\Support\ScriptConfig;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -163,9 +164,8 @@ final class HiddenColumns {
 		// its global function, which belongs to whichever copy loaded first.
 		Assets::enqueue_built_script( Runtime::handle( 'deferred-columns' ), __FILE__, 'deferred-columns' );
 
-		wp_localize_script(
+		ScriptConfig::attach(
 			Runtime::handle( 'deferred-columns' ),
-			'sugarCommerceDeferredColumns',
 			[ 'path' => Routes::path( $id, 'hidden-columns' ) ]
 		);
 	}

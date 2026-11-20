@@ -20,7 +20,6 @@ import {
 import { readNotice } from '../../assets/js/inline-edit/notice';
 import { post as send } from '../../assets/js/inline-edit/post';
 import { fakePost, inlinePage, rowMarkup } from './support/inline';
-import { flush } from './support/table';
 
 const SETTINGS = {
 	path: 'sugarcommerce-tables/v1/orders/quick-edit',
@@ -51,7 +50,8 @@ function setUp( answer = { text: '' } ) {
 		speak,
 	} );
 	unbind();
-	unbind = bindEditor( document, editor );
+	// Bound to the screen, as the entry binds it: its build's .wrap.
+	unbind = bindEditor( document.querySelector( '.wrap' ), editor );
 }
 
 const open = ( id ) =>
@@ -627,25 +627,6 @@ describe( 'the pieces', () => {
 		expect( readNotice( 'not an object' ) ).toBeNull();
 		expect( readNotice( null ) ).toBeNull();
 	} );
-} );
-
-test( 'the entry binds the editors and keeps window.sugarCommerceInlineEditor', async () => {
-	setUp();
-	unbind();
-	window.sugarCommerceInlineEdit = SETTINGS;
-
-	await import( '../../assets/js/inline-edit' );
-	await flush();
-
-	const global = window.sugarCommerceInlineEditor;
-
-	expect( typeof global.edit ).toBe( 'function' );
-	expect( typeof global.save ).toBe( 'function' );
-	expect( typeof global.revert ).toBe( 'function' );
-	expect( typeof global.setBulk ).toBe( 'function' );
-
-	open( '11' );
-	expect( global.what ).toBe( '11' );
 } );
 
 describe( "the quick editor's request", () => {

@@ -483,7 +483,7 @@ final class ToggleTest extends TestCase {
 	/**
 	 * A screen with toggles loads the built script, with nothing of jQuery,
 	 * through api-fetch (which sends the REST nonce), and hands it each
-	 * toggle under the name it has always read. What the script does with them is tests/js/toggle.test.js.
+	 * toggle in its build's entry of window.SugarCommerceTables. What the script does with them is tests/js/toggle.test.js.
 	 */
 	public function test_the_screen_loads_the_built_script(): void {
 		$this->register();
@@ -498,9 +498,11 @@ final class ToggleTest extends TestCase {
 		$this->assertSame( [], preg_grep( '/^jquery/', $deps ) );
 		$this->assertContains( 'sugarcommerce-tables-toggle', $GLOBALS['rt_enqueued_scripts'] ?? [] );
 
-		[ $name, $data ] = $GLOBALS['rt_localized']['sugarcommerce-tables-toggle'];
+		// In this build's entry of the registry, never a fixed page global.
+		$data = rt_script_config( 'sugarcommerce-tables-toggle' );
 
-		$this->assertSame( 'sugarCommerceToggles', $name );
+		$this->assertArrayNotHasKey( 'sugarcommerce-tables-toggle', $GLOBALS['rt_localized'] ?? [] );
+		$this->assertSame( 'sugarcommerce-tables', $data['build'] );
 		$this->assertContains( 'wp-api-fetch', $deps );
 		$this->assertArrayNotHasKey( 'nonce', $data );
 		$this->assertArrayHasKey( 'demo:consent', $data['columns'] );

@@ -20,6 +20,7 @@ use SugarCommerce\Tables\Support\Request;
 use SugarCommerce\Tables\SearchFilter;
 use SugarCommerce\Tables\Table;
 use SugarCommerce\Tables\Utils\Runtime;
+use SugarCommerce\Tables\Support\ScriptConfig;
 
 /**
  * Loading the stylesheet and script, and only where a table is.
@@ -105,9 +106,8 @@ trait AssetManager {
             // the four places it can speak are all failure or announcement
             // text -- exactly the moments where a reader needs their own
             // language.
-            wp_localize_script(
+            ScriptConfig::attach(
                     Runtime::handle( 'inline-edit' ),
-                    'sugarCommerceInlineEdit',
                     [
 						// The REST route Quick Edit saves through, with api-fetch.
 						'path'           => Routes::path( $id, 'quick-edit' ),

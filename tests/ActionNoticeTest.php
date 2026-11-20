@@ -292,6 +292,10 @@ final class ActionNoticeTest extends TestCase {
 
 		$token = ActionNotice::store( [ 'message' => 'Kira Ito was blocked.', 'type' => 'success' ] );
 
+		// Kept under this build's name: another plugin's copy, on the same
+		// site, never reads it as its own.
+		$this->assertSame( [ 'sugarcommerce_tables_notice_7_' . $token ], array_keys( $GLOBALS['rt_transients'] ) );
+
 		$GLOBALS['rt_user_id'] = 8;
 		$this->assertNull( ActionNotice::take( $token ), 'Another user read the notice.' );
 

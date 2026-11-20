@@ -1,49 +1,89 @@
 /**
- * What PHP handed the scripts.
+ * What PHP handed the scripts, and where they may listen.
  *
- * The only module that reads the page's globals. Each object is localized
- * by the class that enqueues its script, under the name it has always had:
- * `sugarCommerceReorder` (Reorder::enqueue()), `sugarCommerceInlineEdit`
- * (Traits\AssetManager), `sugarCommerceToggles` (ToggleRoute::enqueue()),
- * `sugarCommerceDeferredColumns` (HiddenColumns::enqueue()). `pagenow` is
- * core's own, printed on every admin screen.
+ * The only module that reads the page's configuration. Each build of this
+ * library -- the plain one, or a Strauss-prefixed copy inside another plugin
+ * -- files each script's settings in `window.SugarCommerceTables`, keyed by
+ * the script's handle (Support\ScriptConfig): Reorder::enqueue(),
+ * Traits\AssetManager, ToggleRoute::enqueue(), HiddenColumns::enqueue().
+ * Two copies load two of each script, and a fixed global would leave
+ * whichever printed last owning both copies' routes.
+ *
+ * A script finds its own entry from the id WordPress stamps on its <script>
+ * element, "{handle}-js". The entry names its build, as the screen's `.wrap`
+ * does (`data-sugarcommerce-tables`), and a script listens inside that
+ * screen alone. `pagenow` is core's own, printed on every admin screen.
  */
 
+// Read while the script runs. Once it has, document.currentScript is null.
+const script = document.currentScript;
+
 /**
- * The reorder script's settings: the REST route it saves through, and the
- * two sentences it says.
+ * The entry a script's element names in a registry.
  *
- * @return {Object} sugarCommerceReorder, or a shape with no words in it.
+ * @param {Element|null} element  The <script> element, or null.
+ * @param {Object}       registry window.SugarCommerceTables.
+ * @return {Object|undefined} The build's entry, if it published one.
  */
-export function reorderConfig() {
-	return window.sugarCommerceReorder || { i18n: {} };
+export function resolve( element, registry ) {
+	const handle =
+		element && element.id ? element.id.replace( /-js$/, '' ) : '';
+
+	return handle ? ( registry || {} )[ handle ] : undefined;
 }
 
 /**
- * Quick and Bulk Edit's settings: Quick Edit's REST route, the strings.
+ * This script's own settings: its build, its REST route, its words.
  *
- * @return {Object} sugarCommerceInlineEdit, or an empty object.
+ * @return {Object|undefined} The entry, or nothing when PHP printed none.
  */
-export function inlineEditConfig() {
-	return window.sugarCommerceInlineEdit || {};
+export function own() {
+	return resolve( script, window.SugarCommerceTables );
 }
 
 /**
- * The toggle cells' settings: the REST nonce and each column's toggle.
+ * The screen a build's scripts belong to: the `.wrap` that names it.
  *
- * @return {Object} sugarCommerceToggles, or an empty object.
+ * @param {Document} doc   The document.
+ * @param {string}   build The build, as its entry names it.
+ * @return {Element|null} The screen, or null when it is another build's.
  */
-export function toggleConfig() {
-	return window.sugarCommerceToggles || {};
+export function rootOf( doc, build ) {
+	if ( ! build ) {
+		return null;
+	}
+
+	return (
+		Array.from(
+			doc.querySelectorAll( '[data-sugarcommerce-tables]' )
+		).find(
+			( element ) =>
+				element.getAttribute( 'data-sugarcommerce-tables' ) === build
+		) || null
+	);
 }
 
 /**
- * The deferred columns' settings: the route their choice is saved through.
+ * Begin, once: this script's settings and its screen, or nothing.
  *
- * @return {Object} sugarCommerceDeferredColumns, or an empty object.
+ * Nothing without settings, without its own build's screen on the page, or
+ * a second time -- the flag that it has begun is kept in its own entry,
+ * never in a name another copy shares.
+ *
+ * @param {Document}         doc   The document.
+ * @param {Object|undefined} entry This script's entry (own()).
+ * @return {?{config: Object, root: Element}} What to work with, or null.
  */
-export function deferredColumnsConfig() {
-	return window.sugarCommerceDeferredColumns || {};
+export function claim( doc, entry ) {
+	const root = entry ? rootOf( doc, entry.build ) : null;
+
+	if ( ! root || entry.bound ) {
+		return null;
+	}
+
+	entry.bound = true;
+
+	return { config: entry, root };
 }
 
 /**

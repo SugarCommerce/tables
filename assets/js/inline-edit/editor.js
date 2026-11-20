@@ -46,7 +46,7 @@ const shownColumns = ( doc ) => {
  *
  * @param {Document} doc              The document.
  * @param {Object}   options          Options.
- * @param {Object}   options.settings sugarCommerceInlineEdit.
+ * @param {Object}   options.settings This build's inline-edit entry of window.SugarCommerceTables.
  * @param {Function} options.post     Posts the fields: ( path, body ) =>
  *                                    Promise<{ ok, row, notice }>.
  * @param {Function} options.speak    wp.a11y.speak, or a fake.

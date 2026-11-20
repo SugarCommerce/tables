@@ -19,6 +19,7 @@ use SugarCommerce\Tables\Support\Request;
 use SugarCommerce\Tables\Support\Row;
 use SugarCommerce\Tables\Tables;
 use SugarCommerce\Tables\ToggleRoute;
+use SugarCommerce\Tables\Support\ScriptConfig;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -393,9 +394,8 @@ final class Reorder {
 		Assets::enqueue_style( Runtime::handle( 'reorder' ), __FILE__, 'css/reorder.css' );
 		Assets::enqueue_built_script( Runtime::handle( 'reorder' ), __FILE__, 'reorder' );
 
-		wp_localize_script(
+		ScriptConfig::attach(
 			Runtime::handle( 'reorder' ),
-			'sugarCommerceReorder',
 			[
 				// The REST route the order is saved through, with api-fetch.
 				'path' => Routes::path( (string) $table, 'reorder' ),

@@ -18,6 +18,7 @@ use SugarCommerce\Tables\InlineEdit;
 use SugarCommerce\Tables\Support\Request;
 use SugarCommerce\Tables\SearchFilter;
 use SugarCommerce\Tables\Table;
+use SugarCommerce\Tables\Support\ScriptConfig;
 
 /**
  * Drawing the page around the list table.
@@ -78,7 +79,7 @@ trait PageRenderer {
          * a stylesheet -- and never quite matched.
          */
         ?>
-        <div class="wrap">
+        <div class="wrap" <?php echo ScriptConfig::marker(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped where it is built. ?>>
             <?php self::render_header( $id, $config ); ?>
             <?php self::render_admin_notices( $id, $config ); ?>
 

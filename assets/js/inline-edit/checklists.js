@@ -57,7 +57,7 @@ export function fillChecklists( editor, data ) {
  * forgets what the last selection left.
  *
  * @param {Document} doc      The document.
- * @param {Object}   settings sugarCommerceInlineEdit.
+ * @param {Object}   settings This build's inline-edit entry of window.SugarCommerceTables.
  * @return {{set: Function, reset: Function}} The two.
  */
 export function bulkChecklists( doc, settings ) {
