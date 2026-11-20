@@ -16,7 +16,7 @@ use ReflectionMethod;
 use SugarCommerce\Tables\Utils\Runtime;
 
 /**
- * A figure under a column, for the whole view.
+ * A column's figure for the whole view, in the bottom navigation.
  *
  * What is worth pinning is that it is the whole view: the same rows the list
  * pages through, whichever page this is, however many to a page and in
@@ -177,14 +177,14 @@ final class FooterTest extends TestCase {
 	}
 
 	/**
-	 * Drawn twice -- the cell and the bottom navigation -- and asked once.
+	 * Asked once, however often it is drawn.
 	 */
 	public function test_it_is_asked_once_however_often_it_is_drawn(): void {
 		$table = $this->table();
 
-		$this->footer_row( $table );
 		$this->bottom( $table );
 		$this->footer_row( $table );
+		$this->bottom( $table );
 
 		$this->assertCount( 1, $this->asked );
 	}
@@ -202,21 +202,27 @@ final class FooterTest extends TestCase {
 	}
 
 	/**
-	 * The figure takes the place of the footer's "Total", and only there.
+	 * The figure is in the bottom navigation, after the column's name, and
+	 * the table's footer row is core's repeated heading, untouched.
+	 *
+	 * Put it back in the footer cell and this fails.
 	 */
-	public function test_the_figure_is_in_its_own_footer_cell(): void {
-		$table = $this->table();
-		$row   = $this->footer_row( $table );
+	public function test_the_figure_is_in_the_bottom_navigation_not_the_footer_row(): void {
+		$table  = $this->table();
+		$bottom = $this->bottom( $table );
+		$row    = $this->footer_row( $table );
 
-		$this->assertMatchesRegularExpression(
-			"/<th[^>]*class='manage-column column-total sugarcommerce-table-footer'[^>]*><strong>&pound;1,222.33<\/strong> <small>for all 114 orders<\/small><\/th>/",
-			$row
+		$this->assertStringStartsWith( '<div class="alignleft sugarcommerce-table-totals">', $bottom );
+		$this->assertStringContainsString(
+			'<span class="sugarcommerce-table-total sugarcommerce-table-total-total"><span class="sugarcommerce-table-total-label">Total</span> <strong>&pound;1,222.33</strong> <small>for all 114 orders</small></span>',
+			$bottom
 		);
-		$this->assertStringContainsString( '>Name</th>', $row );
-		$this->assertStringContainsString( '>Date</th>', $row );
-		$this->assertStringNotContainsString( '>Total</th>', $row );
 
-		// The heading row keeps its heading.
+		$this->assertStringContainsString( '>Total</th>', $row );
+		$this->assertStringNotContainsString( '1,222.33', $row );
+		$this->assertStringNotContainsString( 'sugarcommerce-table-footer', $row );
+
+		// The heading row keeps its heading too.
 		ob_start();
 		$table->print_column_headers();
 		$heading = (string) ob_get_clean();
@@ -226,23 +232,27 @@ final class FooterTest extends TestCase {
 	}
 
 	/**
-	 * A column switched off keeps its `hidden` class with the figure in it,
-	 * which is what moves the figure to the bottom navigation.
+	 * Only below the table: the top navigation is the filters'.
 	 */
-	public function test_a_hidden_column_keeps_its_hidden_class(): void {
-		$table = $this->table( 114, [ 'hidden_columns' => [ 'total' ] ] );
+	public function test_the_top_navigation_does_not_carry_it(): void {
+		$table  = $this->table();
+		$method = new ReflectionMethod( $table, 'extra_tablenav' );
 
-		$this->assertStringContainsString( "class='manage-column column-total hidden sugarcommerce-table-footer'", $this->footer_row( $table ) );
+		ob_start();
+		$method->invoke( $table, 'top' );
+		$top = (string) ob_get_clean();
+
+		$this->assertStringNotContainsString( '1,222.33', $top );
 	}
 
 	/**
-	 * The bottom navigation carries the figure after the column's name.
+	 * A column switched off in Screen Options still has its figure shown.
 	 */
-	public function test_the_bottom_navigation_carries_it_too(): void {
-		$bottom = $this->bottom( $this->table() );
+	public function test_a_hidden_column_still_has_its_figure_below(): void {
+		$table = $this->table( 114, [ 'hidden_columns' => [ 'total' ] ] );
 
-		$this->assertStringContainsString( 'sugarcommerce-table-total sugarcommerce-table-total-total', $bottom );
-		$this->assertStringContainsString( '<span class="sugarcommerce-table-total-label">Total</span> <strong>&pound;1,222.33</strong>', $bottom );
+		$this->assertStringContainsString( '<strong>&pound;1,222.33</strong>', $this->bottom( $table ) );
+		$this->assertStringContainsString( "class='manage-column column-total hidden'", $this->footer_row( $table ) );
 	}
 
 	/**
@@ -260,7 +270,7 @@ final class FooterTest extends TestCase {
 		);
 
 		$this->assertSame( [], $table->get_footers() );
-		$this->assertStringContainsString( '>Total</th>', $this->footer_row( $table ) );
+		$this->assertSame( '', $this->bottom( $table ) );
 	}
 
 	/**
@@ -270,14 +280,14 @@ final class FooterTest extends TestCase {
 		$table = $this->table( 114, [ 'columns' => [ 'name' => 'Name', 'total' => 'Total' ] ] );
 
 		$this->assertStringContainsString( '>Total</th>', $this->footer_row( $table ) );
-		$this->assertStringNotContainsString( 'sugarcommerce-table-footer', $this->footer_row( $table ) );
+		$this->assertSame( '', $this->bottom( $table ) );
 		$this->assertSame( [], $this->asked );
 	}
 
 	/**
-	 * The rule that moves a switched-off column's figure is that column's.
+	 * No per-column rule: the figure is shown below whatever the column.
 	 */
-	public function test_the_hidden_column_rule_names_the_column(): void {
+	public function test_no_per_column_rule_for_a_footer(): void {
 		$method = new ReflectionMethod( Tables::class, 'output_dynamic_styles' );
 		$method->invoke(
 			null,
@@ -291,10 +301,6 @@ final class FooterTest extends TestCase {
 
 		$css = (string) ( $GLOBALS['rt_inline_styles'][ Runtime::handle() ] ?? '' );
 
-		$this->assertStringContainsString(
-			'.wp-list-table:has(> tfoot .column-total.hidden) ~ .tablenav.bottom .sugarcommerce-table-total-total { display: inline; }',
-			$css
-		);
-		$this->assertStringNotContainsString( 'column-name', $css );
+		$this->assertStringNotContainsString( 'sugarcommerce-table-total', $css );
 	}
 }

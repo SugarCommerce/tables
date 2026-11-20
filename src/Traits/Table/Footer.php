@@ -26,20 +26,14 @@ namespace SugarCommerce\Tables\Traits\Table;
  * ],
  * ```
  *
- * It goes in that column's cell of the footer row core already prints, in
- * place of the repeated heading, which is where the eye is after running down
- * the column -- the way a spreadsheet puts a sum. A `<small>` in it is a
- * quieter second line there.
- *
- * Wherever that cell is not on screen -- the column switched off in Screen
- * Options, or a phone-width screen, where core shows the primary column
- * alone -- the same figure is shown in the bottom navigation instead, after
- * the column's name. That is the stylesheet's choice, made from the cell's
- * `hidden` class, so switching the column off without a reload moves it.
+ * It goes in the bottom navigation, after the bulk actions -- where core
+ * puts a list's extra navigation -- after the column's name, at every width
+ * and whether or not the column is switched off in Screen Options. The
+ * table's own footer row is left as core prints it: the heading again. A
+ * `<small>` in it is quieter than the figure.
  *
  * The library never sums anything: it does not know the data. It asks once
- * per request, only when the view has rows, and remembers the answer for the
- * two places that draw it.
+ * per request, only when the view has rows, and remembers the answer.
  */
 trait Footer {
 
@@ -116,87 +110,15 @@ trait Footer {
     }
 
     /**
-     * Print the heading row, with the footers in the footer's copy of it.
+     * The footers, in the bottom navigation, after the bulk actions.
      *
-     * Core prints the same row twice, the second time without ids, and
-     * leaves nothing in between to hook. Its markup is kept whole -- the
-     * select-all box, the sort links of the other columns, the hidden and
-     * primary classes Screen Options relies on -- and only the cells that
-     * have a footer have their heading swapped for it.
-     *
-     * @param bool $with_id Whether this is the heading (true) or the footer.
+     * Each after its column's name, as core's own text there reads -- not
+     * in the table, whose footer row stays core's repeated heading.
      *
      * @return void
      * @since 1.0.0
      */
-    #[\Override]
-    public function print_column_headers( $with_id = true ): void {
-        $footers = $with_id ? [] : $this->get_footers();
-
-        if ( [] === $footers ) {
-            parent::print_column_headers( $with_id );
-
-            return;
-        }
-
-        ob_start();
-        parent::print_column_headers( $with_id );
-        $row = (string) ob_get_clean();
-
-        echo $this->with_footers( $row, $footers ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- core's own markup, and footers the consumer escaped.
-    }
-
-    /**
-     * Swap a footer into the cell of its column.
-     *
-     * Matched on the `column-{key}` class rather than the cell's position:
-     * the row has a checkbox cell or not, and columns can be filtered in or
-     * out after the configuration was read.
-     *
-     * @param string                $row     The cells core printed.
-     * @param array<string, string> $footers Column key => markup.
-     *
-     * @return string
-     */
-    private function with_footers( string $row, array $footers ): string {
-        return (string) preg_replace_callback(
-            '/<th\b([^>]*)>(.*?)<\/th>/s',
-            static function ( array $cell ) use ( $footers ): string {
-                if ( ! preg_match( '/\bclass=(["\'])(.*?)\1/', $cell[1], $class ) ) {
-                    return $cell[0];
-                }
-
-                $classes = preg_split( '/\s+/', trim( $class[2] ) ) ?: [];
-
-                foreach ( $footers as $column => $markup ) {
-                    if ( in_array( 'column-' . $column, $classes, true ) ) {
-                        $attributes = str_replace(
-                            $class[0],
-                            'class=' . $class[1] . $class[2] . ' sugarcommerce-table-footer' . $class[1],
-                            $cell[1]
-                        );
-
-                        return '<th' . $attributes . '>' . $markup . '</th>';
-                    }
-                }
-
-                return $cell[0];
-            },
-            $row
-        );
-    }
-
-    /**
-     * The footers again, in the bottom navigation, for when their cells are
-     * not on screen.
-     *
-     * Each is hidden by the stylesheet until its column's footer cell is:
-     * see the class comment.
-     *
-     * @return void
-     * @since 1.0.0
-     */
-    private function render_footer_fallback(): void {
+    private function render_footers(): void {
         $footers = $this->get_footers();
 
         if ( [] === $footers ) {

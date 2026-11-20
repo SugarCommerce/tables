@@ -554,13 +554,8 @@ a.column-term:hover {
 	margin-right: 16px;
 }
 
-.tablenav .sugarcommerce-table-total-label,
-.tablenav .sugarcommerce-table-total small {
+.tablenav .sugarcommerce-table-total-label {
 	color: var(--at-text-secondary);
-}
-
-.tablenav .sugarcommerce-table-total small {
-	font-size: inherit;
 }
 
 /* A line of its own under the bulk actions: beside them, the floated

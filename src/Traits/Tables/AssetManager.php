@@ -162,17 +162,6 @@ trait AssetManager {
                     );
                 }
 
-                // A footer moves to the bottom navigation while its column
-                // is switched off in Screen Options. Core marks the cells
-                // `hidden` and the stylesheet cannot name a column it has
-                // never heard of, so the rule is this column's own.
-                if ( ! empty( $col_config['footer'] ) ) {
-                    $styles .= sprintf(
-                            ".wp-list-table:has(> tfoot .column-%1\$s.hidden) ~ .tablenav.bottom .sugarcommerce-table-total-%1\$s { display: inline; }\n",
-                            sanitize_html_class( (string) $column )
-                    );
-                }
-
                 // Column alignment
                 if ( ! empty( $col_config['align'] ) ) {
                     $align  = in_array( $col_config['align'], [ 'left', 'center', 'right' ], true )

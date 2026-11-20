@@ -59,7 +59,7 @@ if ( ! class_exists( 'WP_List_Table' ) ) {
  *
  * - `columns`          (array)    Column definitions with labels and optional callbacks;
  *                                a column's `footer` callable puts a figure for the whole
- *                                view under it (see Traits\Footer)
+ *                                view in the bottom navigation (see Traits\Footer)
  * - `sortable`         (array)    List of sortable columns
  * - `hidden_columns`   (array)    Columns hidden by default
  * - `primary_column`   (string)   Column for row actions

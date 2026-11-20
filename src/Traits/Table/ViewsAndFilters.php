@@ -121,10 +121,10 @@ trait ViewsAndFilters {
      */
     #[\Override]
     protected function extra_tablenav( $which ): void {
-        // Below the table: a column's footer, for when its own cell is not
-        // on screen. See Traits\Footer.
+        // Below the table, after the bulk actions: each column's figure for
+        // the view. See Traits\Footer.
         if ( 'bottom' === $which ) {
-            $this->render_footer_fallback();
+            $this->render_footers();
 
             return;
         }

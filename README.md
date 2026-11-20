@@ -137,14 +137,14 @@ is left out. The `add_button` and the empty list's button work the same
 way, and a `sync` button (a sync id, or a list of them) goes through
 sugarcommerce/jobs' `Sync` class.
 
-## A figure under a column
+## A figure for a column
 
 A column's `footer` puts a figure for the whole view -- every page of it, as
-searched, filtered and narrowed to a status -- in that column's cell of the
-footer row, where core repeats the heading. It is handed the same query
+searched, filtered and narrowed to a status -- in the bottom navigation,
+after the bulk actions and the column's name. The table's footer row stays
+core's repeated heading. It is handed the same query
 arguments `get_items` is, less the page and the order, and how many rows the
-view has; it returns escaped markup, and a `<small>` in it is a quieter
-second line:
+view has; it returns escaped markup, and a `<small>` in it is quieter:
 
 ```php
 'total' => [
@@ -155,10 +155,8 @@ second line:
 ],
 ```
 
-It is asked once a request, and not at all while the view is empty. Where
-the cell is not on screen -- the column switched off in Screen Options, or a
-phone, where core shows only the primary column -- the figure is shown in
-the bottom navigation instead, after the column's name.
+It is asked once a request, and not at all while the view is empty. It is
+shown at every width, and while the column is switched off in Screen Options.
 
 ## A filter with too many choices to list
 
