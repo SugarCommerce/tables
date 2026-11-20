@@ -85,11 +85,6 @@ trait Registration {
             'primary_column' => '',
             'hidden_columns' => [],
 
-            // The columns repeated under a row's title on a phone: keys, or
-            // false for none. Unset, a status and an amount. See
-            // ColumnLayout::summary().
-            'summary'        => null,
-
             // Actions
             'row_actions'    => [],
             'bulk_actions'   => [],
@@ -434,9 +429,7 @@ trait Registration {
      * Detect primary column from configuration
      *
      * Checks for explicit 'primary' flag in column config, otherwise
-     * uses the first non-checkbox column that is not a bare `id`: on a
-     * phone the primary column is all a row shows, and "#11" down the
-     * screen says nothing.
+     * uses the first non-checkbox column.
      *
      * @param string $primary_column Configured primary column (may be empty).
      * @param array  $columns        Column definitions.
@@ -457,13 +450,10 @@ trait Registration {
             }
         }
 
-        // Fall back to the first column that says more than a number,
-        // then to the first column at all.
-        foreach ( [ true, false ] as $skip_id ) {
-            foreach ( $columns as $key => $column ) {
-                if ( 'cb' !== $key && ! ( $skip_id && 'id' === strtolower( (string) $key ) ) ) {
-                    return $key;
-                }
+        // Fall back to first non-cb column
+        foreach ( $columns as $key => $column ) {
+            if ( $key !== 'cb' ) {
+                return $key;
             }
         }
 

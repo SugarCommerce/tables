@@ -139,7 +139,7 @@ final class PersonCellTest extends TestCase {
 	 */
 	public function test_a_url_or_a_link_of_its_own(): void {
 		$this->assertStringContainsString( '<a href="https://example.test/u/12">Uma Rossi</a>', Person::cell( $this->uma( [ 'flyout' => '', 'url' => 'https://example.test/u/12' ] ) ) );
-		$this->assertStringContainsString( '<span style="display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden;overflow-wrap:anywhere"><b>Uma</b></span>', Person::cell( $this->uma( [ 'link' => '<b>Uma</b>' ] ) ) );
+		$this->assertStringContainsString( '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><b>Uma</b></span>', Person::cell( $this->uma( [ 'link' => '<b>Uma</b>' ] ) ) );
 	}
 
 	/**

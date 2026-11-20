@@ -62,8 +62,7 @@ if ( ! class_exists( 'WP_List_Table' ) ) {
  *                                view under it (see Traits\Footer)
  * - `sortable`         (array)    List of sortable columns
  * - `hidden_columns`   (array)    Columns hidden by default
- * - `primary_column`   (string)   Column for row actions, and all a phone shows of a row
- * - `summary`          (array|false) Columns repeated under the title on a phone
+ * - `primary_column`   (string)   Column for row actions
  * - `bulk_actions`     (array)    Bulk action definitions
  * - `row_actions`      (array|callable) Row action definitions or callback
  * - `views`            (array)    Status view definitions
@@ -222,13 +221,8 @@ class Table extends WP_List_Table {
      * the view last chosen on Posts (`posts_list_mode`), and only a list
      * view's rows show their actions on keyboard focus (common.js listens
      * on `.table-view-list .has-row-actions`). This table has no excerpt
-     * view.
-     *
-     * And `fixed`, as core's Plugins screen leaves it off: a fixed table
-     * gives every column the same width unless a stylesheet names it, and
-     * core's stylesheet names only its own columns. Laid out by what is in
-     * them, a price is as wide as a price and a name gets the rest (see
-     * ColumnLayout).
+     * view. Core's `fixed` layout stays, as on Posts: the columns share the
+     * table's width and nothing in a cell can push it past its box.
      *
      * @return array Array of CSS class names.
      * @since 1.0.0
@@ -238,7 +232,7 @@ class Table extends WP_List_Table {
     protected function get_table_classes(): array {
         $classes = parent::get_table_classes();
 
-        $classes = array_diff( $classes, [ 'table-view-excerpt', 'table-view-list', 'fixed' ] );
+        $classes = array_diff( $classes, [ 'table-view-excerpt', 'table-view-list' ] );
 
         return [ ...array_values( $classes ), 'table-view-list' ];
     }

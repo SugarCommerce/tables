@@ -152,16 +152,17 @@ describe( 'the lifted row', () => {
 		letGo( TOP + ROW * 3 );
 	} );
 
-	test( 'holds the heading too, so the columns do not move under it', () => {
+	test( 'leaves the heading alone: a fixed table keeps its columns', () => {
 		pickUp( 1, TOP + ROW * 3 );
 
-		expect( parts.heading.children[ 1 ].style.width ).toBe( '182px' );
-		expect( parts.heading.children[ 2 ].style.width ).toBe( '' );
+		Array.from( parts.heading.children ).forEach( ( cell, index ) => {
+			expect( cell.style.width, `heading ${ index }` ).toBe( '' );
+		} );
 
 		letGo( TOP + ROW * 3 );
 	} );
 
-	test( 'lets go of every width when it lands, and the heading of its own', () => {
+	test( 'lets go of every width when it lands', () => {
 		const row = parts.list.children[ 1 ];
 
 		pickUp( 1, TOP + ROW * 3 );
@@ -171,7 +172,6 @@ describe( 'the lifted row', () => {
 			expect( cell.style.width, `cell ${ index }` ).toBe( '' );
 			expect( cell.style.boxSizing, `cell ${ index }` ).toBe( '' );
 		} );
-		expect( parts.heading.children[ 1 ].style.width ).toBe( '' );
 		expect( row.classList.contains( 'ui-sortable-helper' ) ).toBe( false );
 		expect( row.style.position ).toBe( '' );
 		expect( row.style.top ).toBe( '' );

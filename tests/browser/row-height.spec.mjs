@@ -13,48 +13,7 @@
  * under this package's stylesheet as well.
  */
 import { test, expect } from '@playwright/test';
-import { existsSync, readFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const here = dirname( fileURLToPath( import.meta.url ) );
-const pkg = resolve( here, '../..' );
-
-/**
- * The WordPress whose stylesheets the pages are built from.
- *
- * @return {string} Its root folder.
- */
-function wordpress() {
-	const candidates = [ process.env.WP_CORE_DIR ].filter( Boolean );
-
-	for ( let dir = pkg; dirname( dir ) !== dir; dir = dirname( dir ) ) {
-		candidates.push( dir );
-	}
-
-	const root = candidates.find( ( dir ) =>
-		existsSync( join( dir, 'wp-admin/css/list-tables.css' ) )
-	);
-
-	if ( ! root ) {
-		throw new Error(
-			'No WordPress found above this package: set WP_CORE_DIR to one.'
-		);
-	}
-
-	return root;
-}
-
-const core = [
-	'wp-includes/css/dashicons.css',
-	'wp-includes/css/buttons.css',
-	'wp-admin/css/common.css',
-	'wp-admin/css/forms.css',
-	'wp-admin/css/list-tables.css',
-	'wp-admin/css/edit.css',
-].map( ( file ) => readFileSync( join( wordpress(), file ), 'utf8' ) );
-
-const ours = readFileSync( join( pkg, 'assets/css/admin-tables.css' ), 'utf8' );
+import { core, ours } from './support.mjs';
 
 const actions =
 	'<div class="row-actions">' +
@@ -113,11 +72,11 @@ const pages = {
 		primary: 'title column-title',
 		styles: core,
 	} ),
-	// What Table draws: no `fixed`, always core's list view, the primary
-	// column named after its field.
+	// What Table draws: core's fixed layout, always core's list view, the
+	// primary column named after its field.
 	table: list( {
 		body: 'admin-table admin-table-discounts',
-		table: 'wp-list-table widefat striped table-view-list discounts',
+		table: 'wp-list-table widefat fixed striped table-view-list discounts',
 		primary: 'name column-name',
 		styles: [ ...core, ours ],
 	} ),

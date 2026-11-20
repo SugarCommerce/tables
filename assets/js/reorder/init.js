@@ -27,9 +27,6 @@ export function initReorder( list, { config, apiFetch, speak: say } ) {
 
 	bindControls( list, order.step );
 
-	const table = list.parentElement;
-	const heading = table ? table.querySelector( 'thead tr' ) : null;
-
 	if ( order.rows().length > 1 ) {
 		sortable( list, {
 			handle: '.sugarcommerce-reorder__handle',
@@ -40,24 +37,15 @@ export function initReorder( list, { config, apiFetch, speak: say } ) {
 			cancel: 'input, textarea, select, option, a, .sugarcommerce-reorder__step',
 			placeholder: 'sugarcommerce-reorder-placeholder',
 
-			// The lifted row's cells are held at the widths they had, and
-			// so are the heading's, so the columns do not move under it.
+			// The lifted row's cells are held at the widths they had.
 			helper( event, row ) {
 				hold( row );
-
-				if ( heading ) {
-					hold( heading );
-				}
 			},
 			start( event, { item, placeholder } ) {
 				fillGap( placeholder, item );
 			},
 			stop( event, { item } ) {
 				release( item );
-
-				if ( heading ) {
-					release( heading );
-				}
 			},
 			update( event, { item } ) {
 				order.save( item );

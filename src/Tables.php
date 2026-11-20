@@ -89,8 +89,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * | labels              | array             | UI labels (singular, plural, title, etc.)        |
  * | columns             | array             | Column definitions                               |
  * | sortable            | array             | Sortable column keys                             |
- * | primary_column      | string            | Column for row actions; a phone shows only it    |
- * | summary             | array|false       | Columns repeated under the title on a phone      |
+ * | primary_column      | string            | Column for row actions                           |
  * | hidden_columns      | array             | Columns hidden by default                        |
  * | row_actions         | array|callable    | Row action definitions                           |
  * | bulk_actions        | array             | Bulk action definitions                          |

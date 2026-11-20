@@ -12,8 +12,6 @@ declare( strict_types=1 );
 
 namespace SugarCommerce\Tables\Traits\Table;
 
-use SugarCommerce\Tables\Support\ColumnLayout;
-use SugarCommerce\Tables\Support\Columns;
 use SugarCommerce\Tables\Support\FlyoutLink;
 use SugarCommerce\Tables\InlineEdit;
 use SugarCommerce\Tables\Seen\Highlights;
@@ -105,37 +103,7 @@ trait RowActions {
 
         // What a lit row is, for whoever cannot see its colour: read aloud
         // in the row's first cell, after its content. See Seen\Highlights.
-        return Highlights::announce( $this->id, $item ) . $this->row_summary( $item ) . $this->row_actions( $actions );
-    }
-
-    /**
-     * The facts a phone shows under a row's title.
-     *
-     * Core shows the primary column alone below 782px. These are the cells
-     * of ColumnLayout::summary()'s columns drawn again, on one line under
-     * the title -- "Complete · $131.02" -- and the stylesheet shows the line
-     * only there, and not on a row opened with "Show more details", where
-     * the cells themselves are.
-     *
-     * @param object $item Data object.
-     *
-     * @return string Escaped markup, or nothing.
-     */
-    private function row_summary( $item ): string {
-        $parts = [];
-
-        foreach ( ColumnLayout::summary( $this->config, $this->get_hidden_columns() ) as $column ) {
-            $cell = method_exists( $this, 'column_' . $column )
-                ? (string) $this->{'column_' . $column}( $item )
-                : (string) $this->column_default( $item, $column );
-
-            // Nothing to say is left out, not said as a dash.
-            if ( '' !== trim( wp_strip_all_tags( $cell, true ) ) && Columns::render_empty() !== $cell ) {
-                $parts[] = '<span class="sugarcommerce-row-summary-part">' . $cell . '</span>';
-            }
-        }
-
-        return [] === $parts ? '' : '<div class="sugarcommerce-row-summary">' . implode( '', $parts ) . '</div>';
+        return Highlights::announce( $this->id, $item ) . $this->row_actions( $actions );
     }
 
     /**

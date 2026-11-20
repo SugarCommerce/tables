@@ -3,9 +3,7 @@
  *
  * A table row lifted out of its table forgets its column widths, and the
  * row being dragged collapses to the width of its text. Each cell is held
- * at the width it had, and so is the heading's: the table is laid out by
- * what is in it, and with a row taken out the columns would otherwise
- * shift under the drag. Landing lets them go.
+ * at the width it had. Landing lets them go.
  */
 
 /**

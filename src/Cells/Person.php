@@ -35,12 +35,6 @@ defined( 'ABSPATH' ) || exit;
  * -- in the middle of a word, there being no spaces in one -- and makes every
  * row a line taller. The whole address is the tooltip.
  *
- * Clamped to the line rather than kept from wrapping: a line that cannot
- * wrap is as wide as all of it to a table laid out by its contents, and a
- * long address pushed the list past the edge of the screen. One that may
- * wrap anywhere asks for its whole width when there is room and gives it
- * up when there is not.
- *
  * The layout is inline styles, not the stylesheet, so the cell is the same
  * cell wherever it is drawn: a list, or a table of records inside a panel on
  * a screen that never loaded this library's CSS.
@@ -52,7 +46,7 @@ final class Person {
 	/**
 	 * One line, cut short: what the name and the address both are.
 	 */
-	private const string LINE = 'display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden;overflow-wrap:anywhere';
+	private const string LINE = 'display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
 
 	/**
 	 * The cell.
@@ -97,7 +91,7 @@ final class Person {
 
 		$cell = self::avatar( $parts, $email, $name ) . sprintf(
 			'<strong class="sugarcommerce-person-name" style="display:flex;gap:8px"%3$s><span style="%1$s">%2$s</span>%4$s</strong>',
-			esc_attr( self::LINE ),
+			esc_attr( str_replace( 'display:block;', '', self::LINE ) ),
 			self::link( $parts, $title ),
 			'' !== $name ? '' : ' title="' . esc_attr( $email ) . '"',
 			(string) ( $parts['after'] ?? '' )

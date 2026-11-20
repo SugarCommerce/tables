@@ -13,7 +13,6 @@ declare( strict_types=1 );
 namespace SugarCommerce\Tables\Traits\Tables;
 
 use SugarCommerce\Plugin\Assets;
-use SugarCommerce\Tables\Support\ColumnLayout;
 use SugarCommerce\Tables\Editing\Routes;
 use SugarCommerce\Tables\HiddenColumns;
 use SugarCommerce\Tables\Support\Request;
@@ -150,17 +149,6 @@ trait AssetManager {
 
         if ( ! empty( $config['columns'] ) ) {
             foreach ( $config['columns'] as $column => $col_config ) {
-                // A figure's column as wide as the figure, on one line, so
-                // the columns with words in them get the room. The table is
-                // laid out by its contents (see Table::get_table_classes),
-                // so the 1% is "as narrow as it goes", not a size.
-                if ( ColumnLayout::is_compact( (string) $column, $col_config, $config ) ) {
-                    $styles .= sprintf(
-                            ".wp-list-table .column-%s { width: 1%%; white-space: nowrap; }\n",
-                            sanitize_html_class( (string) $column )
-                    );
-                }
-
                 if ( ! is_array( $col_config ) ) {
                     continue;
                 }

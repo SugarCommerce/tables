@@ -24,8 +24,6 @@ message follows.
 * Read rows, counts and related rows from a BerlinDB table by naming its query class
 * Offer each row its next status, and say what moved by name
 * Format a column as a price, a date, a status badge or a country, by naming the type
-* Lay columns out by what is in them: a figure's column is as wide as the figure, the names get the rest
-* Show a row's status and amount under its title on a phone, where core folds the other columns away
 * Draw a person, or one thing with its picture, the same way on every list
 * Let each person choose relative or exact dates, and skip columns nobody is looking at
 * Make a cell a switch that saves itself -- a star, or a line of words
@@ -82,41 +80,17 @@ of its own takes `ParentMenu::register( 'my-plugin', __( 'Shop',
 'my-plugin'`; one drawn inside a page you made yourself is
 `Tables::renderer( 'my_orders' )`, as that page's callback.
 
-## Widths, the primary column and phones
+## Layout and row actions
 
-Nobody sets a width. The table is laid out by what is in it (core's `fixed`
-layout is left off, as on core's Plugins screen), and a column whose type is
-a figure -- `price`, `count`, `percentage`, `rate`, `duration`, `file_size`,
-`date`, `status`, `boolean`, `color`, `image`, a `toggle` or the reorder
-handle -- is drawn on one line and is as wide as that line. The columns with
-words in them share what is left. A column says otherwise with `compact`:
-
-```php
-'marketing' => [ 'label' => __( 'Marketing', 'my-plugin' ), 'compact' => true ],  // a short line of words
-'last_order' => [ 'label' => __( 'Last Order', 'my-plugin' ), 'compact' => false ], // a date with a product under it
-```
+The table is core's: its `fixed` layout, as on Posts, with the columns
+sharing the width unless a column names its own (`'width' => '10%'`). The
+row actions sit under the primary column -- `primary_column`, or a column's
+`'primary' => true`, and when neither is set the first column after the tick
+box.
 
 Row actions are core's, untouched: their line under the title is there
 whether they show or not, so a row is as tall pointed at as not, exactly as
-on Posts and Pages, and keyboard focus shows them as it does there. A table
-whose actions wrap onto a second line has too narrow a primary column: mark
-the other short columns `compact`.
-
-On a phone core shows the primary column alone, with the rest behind its
-"Show more details" toggle, so the primary column is the one that says what
-the row is: `primary_column`, or a column's `'primary' => true`, and when
-neither is set the first column that is not a bare `id`. A status and an
-amount are repeated under its title there -- the first `status` and the
-first `price` column -- or the columns `summary` names, or none with
-`'summary' => false`:
-
-```php
-'primary_column' => 'customer',
-'summary'        => [ 'status', 'total' ],
-```
-
-Columns before the primary one fold away on a phone too, and an opened row
-lists the primary column first.
+on Posts and Pages, and keyboard focus shows them as it does there.
 
 ## A title with states
 
@@ -349,6 +323,7 @@ the capability sees the state and no button.
 'columns' => [
 	'featured' => [
 		'label'  => SugarCommerce\Tables\Toggle::heading( __( 'Featured', 'my-plugin' ) ),
+		'width'  => '4em',
 		'toggle' => [
 			'style'        => 'star',
 			'on'           => __( 'Featured', 'my-plugin' ),
@@ -950,7 +925,10 @@ npm run lint:js
 another), on pages built from the stylesheets of the WordPress this package
 sits in (or `WP_CORE_DIR`): a row is as tall at rest, pointed at and with
 the keyboard on its actions, and as tall as the same row on Posts, at 1440
-and 390 pixels. CI does not run it; run it after touching the stylesheet.
+and 390 pixels; and a ten-column table drawn by the package itself
+(`tests/browser/render.php`) has its row actions in the first column after
+the tick box and stays inside the screen at 1440. CI does not run it; run it
+after touching the stylesheet or the layout.
 
 The build's files are what ship. CI builds again and fails when the result
 differs from what was committed.

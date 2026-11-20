@@ -53,3 +53,7 @@
 # through these same rules -- without this, a plugin built from a local clone
 # copies the library's phpunit and phpcs into its vendor-prefixed folder.
 /vendor export-ignore
+
+# Playwright's output, from `npm run test:browser`
+/test-results export-ignore
+/playwright-report export-ignore
