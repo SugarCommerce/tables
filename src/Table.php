@@ -218,9 +218,11 @@ class Table extends WP_List_Table {
 /**
      * Get CSS classes for the table element
      *
-     * Removes 'table-view-excerpt' class which WordPress adds when columns
-     * are manageable via screen options. This class causes row actions to
-     * be always visible instead of on hover.
+     * Always core's list view, `table-view-list`: core names the table after
+     * the view last chosen on Posts (`posts_list_mode`), and only a list
+     * view's rows show their actions on keyboard focus (common.js listens
+     * on `.table-view-list .has-row-actions`). This table has no excerpt
+     * view.
      *
      * And `fixed`, as core's Plugins screen leaves it off: a fixed table
      * gives every column the same width unless a stylesheet names it, and
@@ -236,10 +238,9 @@ class Table extends WP_List_Table {
     protected function get_table_classes(): array {
         $classes = parent::get_table_classes();
 
-        // Remove excerpt view class to keep row actions hover behavior
-        $classes = array_diff( $classes, [ 'table-view-excerpt', 'fixed' ] );
+        $classes = array_diff( $classes, [ 'table-view-excerpt', 'table-view-list', 'fixed' ] );
 
-        return array_values( $classes );
+        return [ ...array_values( $classes ), 'table-view-list' ];
     }
 
     /* =========================================================================

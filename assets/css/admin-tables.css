@@ -331,32 +331,24 @@ a.column-term:hover {
 
 
 /* ==========================================================================
-   Row Actions - Enforce Hover Behavior
+   Row Actions
 
-   WordPress may override this when columns are manageable, so we enforce it.
-   Undone on a narrow screen, at the end of this file, where there is no
-   hover to reveal them with.
+   Nothing here. Core's list-table stylesheet keeps the line of row actions
+   under the title at all times, off to the left until the row is pointed
+   at or focused (`.row-actions.visible`, from common.js), so a row is as
+   tall hovered as not -- as on Posts and Pages. A line of actions that
+   wraps is a primary column too narrow: widen it (`compact` columns), do
+   not restyle the actions (StylesheetTest holds this file to that).
    ========================================================================== */
 
-.admin-table .wp-list-table .row-actions,
-.admin-table .wp-list-table .row-actions.visible {
-    visibility: hidden;
-}
-
-.admin-table .wp-list-table tr:hover .row-actions,
-.admin-table .wp-list-table tr:focus-within .row-actions {
-    visibility: visible;
-}
-
-/* And while they are hidden they take no room. Core only moves them off to
-   the left, so a row kept a band as tall as its actions -- three lines of
-   them in a narrow column -- empty under every title. Still in the flow,
-   so the column is as wide whether they show or not; a phone (`.mobile`,
-   which has no hover) shows them as core does. */
-.admin-table:not(.mobile) .wp-list-table tr:not(:hover):not(:focus-within) .row-actions {
-    height: 0;
-    padding-top: 0;
-    overflow: hidden;
+/* A row's title is drawn as core draws a post's: core's rule names only
+   its own Title column (`th.column-title strong`), and a table here names
+   its primary column after its own field. Without it the title sat inline
+   at 13px and a row was a few pixels shorter than a post's. */
+.wp-list-table .column-primary > strong {
+    display: block;
+    margin-bottom: .2em;
+    font-size: 14px;
 }
 
 /* ==========================================================================
@@ -597,23 +589,13 @@ a.column-term:hover {
 /* ==========================================================================
    Narrow screens
 
-   Last in the file on purpose. A media query carries no extra specificity —
-   only later position — so the row-action override has to come after the
-   rule it undoes rather than before it.
-
    Core already handles the list table itself here: it collapses the columns
-   behind a toggle and grows the controls to touch targets. What is left is
-   the handful of things this library adds on top.
+   behind a toggle, grows the controls to touch targets and shows a row's
+   actions as it does on Posts. What is left is the handful of things this
+   library adds on top.
    ========================================================================== */
 
 @media screen and (max-width: 782px) {
-
-        /* Row actions are a hover affordance and a phone has no hover, so the
-       rule above would put every Edit and Delete link out of reach. */
-    .admin-table .wp-list-table .row-actions,
-    .admin-table .wp-list-table .row-actions.visible {
-        visibility: visible;
-    }
 
     /* Sixty pixels of padding and forty of margin is most of a phone. */
     .list-table-empty-state {

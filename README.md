@@ -96,8 +96,11 @@ words in them share what is left. A column says otherwise with `compact`:
 'last_order' => [ 'label' => __( 'Last Order', 'my-plugin' ), 'compact' => false ], // a date with a product under it
 ```
 
-Row actions take no room until the row is pointed at or has the keyboard's
-focus (on a phone, which cannot point, they are shown as core shows them).
+Row actions are core's, untouched: their line under the title is there
+whether they show or not, so a row is as tall pointed at as not, exactly as
+on Posts and Pages, and keyboard focus shows them as it does there. A table
+whose actions wrap onto a second line has too narrow a primary column: mark
+the other short columns `compact`.
 
 On a phone core shows the primary column alone, with the rest behind its
 "Show more details" toggle, so the primary column is the one that says what
@@ -939,8 +942,15 @@ npm ci
 npm run build      # assets/build, committed
 npm run start      # rebuild on change
 npm run test:js    # Vitest, in jsdom (composer test:js runs it too)
+npm run test:browser
 npm run lint:js
 ```
+
+`test:browser` is Playwright in the machine's Chrome (`PW_CHANNEL` for
+another), on pages built from the stylesheets of the WordPress this package
+sits in (or `WP_CORE_DIR`): a row is as tall at rest, pointed at and with
+the keyboard on its actions, and as tall as the same row on Posts, at 1440
+and 390 pixels. CI does not run it; run it after touching the stylesheet.
 
 The build's files are what ship. CI builds again and fails when the result
 differs from what was committed.

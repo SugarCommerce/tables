@@ -155,12 +155,13 @@ class WP_List_Table {
 	}
 
 	/**
-	 * The table's classes.
+	 * The table's classes: core's, with the Posts screen's view the user
+	 * last chose (`$GLOBALS['stub_list_mode']`, `list` by default).
 	 *
 	 * @return string[]
 	 */
 	protected function get_table_classes() {
-		return [ 'widefat', 'fixed', 'striped' ];
+		return [ 'widefat', 'fixed', 'striped', 'table-view-' . ( $GLOBALS['stub_list_mode'] ?? 'list' ), $this->_args['plural'] ?? '' ];
 	}
 
 	/**

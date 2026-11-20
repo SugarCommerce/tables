@@ -60,39 +60,43 @@ final class StylesheetTest extends TestCase {
 	}
 
 	/**
-	 * Row actions are reachable without a hover.
+	 * Row actions are core's: no stylesheet here selects them.
 	 *
-	 * The library hides them and reveals them on `tr:hover`, which is right
-	 * on a desktop and puts every Edit and Delete link out of reach on a
-	 * phone. Core shows them on narrow screens; this must not re-hide them.
+	 * Core keeps a row's line of actions under its title at all times, off
+	 * to the left until the row is pointed at or focused, so a row is as
+	 * tall hovered as not. Taking that line away while hidden made every
+	 * row grow when the pointer crossed it; hiding it with `visibility`
+	 * kept the keyboard from ever reaching an Edit link. A primary column
+	 * too narrow for its actions is fixed by the column widths instead.
 	 */
-	public function test_row_actions_are_visible_on_a_narrow_screen(): void {
-		$css = $this->css();
+	public function test_row_actions_are_left_to_core(): void {
+		$selecting = [];
 
-		$narrow = strstr( $css, '@media screen and (max-width: 782px)' );
+		foreach ( (array) glob( dirname( __DIR__ ) . '/assets/css/*.css' ) as $file ) {
+			$css = (string) preg_replace( '#/\*.*?\*/#s', '', (string) file_get_contents( (string) $file ) );
 
-		$this->assertNotFalse( $narrow, 'There are no styles for a narrow screen.' );
-		$this->assertMatchesRegularExpression(
-			'/row-actions[^{]*\{[^}]*visibility:\s*visible/',
-			(string) $narrow,
-			'Row actions stay hidden on a phone, where nothing can hover to reveal them.'
-		);
+			preg_match_all( '/([^{}]+)\{/', $css, $rules );
+
+			foreach ( $rules[1] as $selector ) {
+				if ( str_contains( $selector, 'row-actions' ) ) {
+					$selecting[] = basename( (string) $file ) . ': ' . trim( preg_replace( '/\s+/', ' ', $selector ) );
+				}
+			}
+		}
+
+		$this->assertNotEmpty( glob( dirname( __DIR__ ) . '/assets/css/*.css' ) );
+		$this->assertSame( [], $selecting, implode( "\n", $selecting ) );
 	}
 
 	/**
-	 * The narrow-screen block comes last.
-	 *
-	 * A media query carries no extra specificity — only later position — so
-	 * an override inside one has to come after the rule it undoes. The
-	 * row-action rule is the one that matters, and it sits above.
+	 * A row's title is drawn as a post's is: core's rule names only its own
+	 * Title column, and a primary column here is named after its field.
+	 * Without it a row was a few pixels shorter than one on Posts.
 	 */
-	public function test_the_narrow_screen_block_comes_after_what_it_overrides(): void {
-		$css = $this->css();
-
-		$this->assertGreaterThan(
-			strrpos( $css, '.admin-table .wp-list-table tr:hover .row-actions' ),
-			strpos( $css, '@media screen and (max-width: 782px)' ),
-			'The narrow-screen block is above the rule it has to undo, so it loses.'
+	public function test_a_title_is_drawn_as_core_draws_a_post_s(): void {
+		$this->assertMatchesRegularExpression(
+			'/\n\.wp-list-table \.column-primary > strong \{\s*display: block;\s*margin-bottom: \.2em;\s*font-size: 14px;\s*\}/',
+			$this->css()
 		);
 	}
 

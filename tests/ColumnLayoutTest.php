@@ -139,6 +139,31 @@ final class ColumnLayoutTest extends TestCase {
 	}
 
 	/**
+	 * Core's list view whatever was last chosen on Posts: only a list
+	 * view's rows show their actions on keyboard focus (common.js).
+	 */
+	public function test_the_table_is_always_core_s_list_view(): void {
+		$table   = $this->orders();
+		$classes = new ReflectionMethod( $table, 'get_table_classes' );
+
+		$GLOBALS['stub_list_mode'] = 'excerpt';
+
+		try {
+			$excerpt = (array) $classes->invoke( $table );
+		} finally {
+			unset( $GLOBALS['stub_list_mode'] );
+		}
+
+		$list = (array) $classes->invoke( $table );
+
+		foreach ( [ $excerpt, $list ] as $names ) {
+			$this->assertSame( 1, count( array_keys( $names, 'table-view-list', true ) ) );
+			$this->assertNotContains( 'table-view-excerpt', $names );
+			$this->assertSame( array_values( $names ), $names );
+		}
+	}
+
+	/**
 	 * The phone's summary: a status and an amount by default, never the
 	 * primary column, never a column switched off, and what a table names.
 	 */
@@ -175,13 +200,13 @@ final class ColumnLayoutTest extends TestCase {
 	}
 
 	/**
-	 * The stylesheet's half: hidden actions take no room, the summary is a
-	 * phone's, and there the columns before the primary one fold away too.
+	 * The stylesheet's half: the summary is a phone's, and there the
+	 * columns before the primary one fold away too. (Row actions are
+	 * core's: StylesheetTest.)
 	 */
 	public function test_the_stylesheet_folds_what_it_should(): void {
 		$css = (string) file_get_contents( dirname( __DIR__ ) . '/assets/css/admin-tables.css' );
 
-		$this->assertMatchesRegularExpression( '/\.admin-table:not\(\.mobile\) \.wp-list-table tr:not\(:hover\):not\(:focus-within\) \.row-actions \{\s*height: 0;/', $css );
 		$this->assertMatchesRegularExpression( '/\n\.sugarcommerce-row-summary \{\s*display: none;/', $css );
 		$this->assertMatchesRegularExpression( '/max-width: 782px\) \{\s*\.sugarcommerce-row-summary \{\s*display: flex;/', $css );
 		$this->assertStringContainsString( 'td:not(.check-column):not(.column-primary) {', $css );

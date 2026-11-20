@@ -119,6 +119,7 @@
     "format:check": "phpcs --standard=phpcs-format.xml.dist",
     "docs:verify": "php vendor/sugarcommerce/fields/bin/verify-docs.php --calls=Tables::register README.md",
     "test:js": "npm run test:js",
+    "test:browser": "npm run test:browser",
     "test:all": [
       "@test",
       "@test:js"

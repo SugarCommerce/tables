@@ -8,10 +8,12 @@
     "build": "wp-scripts build reorder=./assets/js/reorder.js inline-edit=./assets/js/inline-edit.js toggle=./assets/js/toggle.js deferred-columns=./assets/js/deferred-columns.js --output-path=assets/build",
     "start": "wp-scripts start reorder=./assets/js/reorder.js inline-edit=./assets/js/inline-edit.js toggle=./assets/js/toggle.js deferred-columns=./assets/js/deferred-columns.js --output-path=assets/build",
     "test:js": "wp-scripts test-unit-js",
-    "lint:js": "wp-scripts lint-js assets/js tests/js",
-    "format:js": "wp-scripts format assets/js tests/js"
+    "lint:js": "wp-scripts lint-js assets/js tests/js tests/browser",
+    "format:js": "wp-scripts format assets/js tests/js tests/browser",
+    "test:browser": "playwright test --config tests/browser/playwright.config.mjs"
   },
   "devDependencies": {
+    "@playwright/test": "~1.65.1",
     "@wordpress/a11y": "^5.2.0",
     "@wordpress/api-fetch": "^8.1.0",
     "@wordpress/dom-ready": "^5.1.0",
